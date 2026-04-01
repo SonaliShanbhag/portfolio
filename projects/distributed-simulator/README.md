@@ -1,6 +1,6 @@
 # Distributed system simulator
 
-A small browser demo that models a **single client request** traveling through a **linear chain of four services** (Gateway → Service A → Service B → Service C). It is meant to illustrate how **latency**, **per-hop failure probability**, **retries with exponential backoff**, and a **total client timeout** interact—the same kinds of knobs you tune when debugging orchestrated flows or flaky dependencies in production.
+A small browser demo that models a **single client request** traveling through a **linear chain of four services** (Gateway → Service A → Service B → Service C). It is meant to illustrate how **latency**, **per-hop failure probability**, **retries with exponential backoff**, and a **total client timeout** interact - the same kinds of knobs you tune when debugging orchestrated flows or flaky dependencies in production.
 
 This is a **pure frontend simulation**: nothing runs on a server; all numbers are computed in JavaScript when you click **Send request**.
 
@@ -13,7 +13,7 @@ This is a **pure frontend simulation**: nothing runs on a server; all numbers ar
    After a failed attempt, the client waits **exponential backoff**: roughly `retryBackoffMs × 2^(attempt - 1)` plus extra jitter. That wait counts toward **total elapsed time**.
 
 3. **Timeout**  
-   If cumulative time (hops + retry waits) exceeds **Total timeout**, the run ends in **timeout**—either mid-chain, during a hop, or while waiting before a retry.
+   If cumulative time (hops + retry waits) exceeds **Total timeout**, the run ends in **timeout** - either mid-chain, during a hop, or while waiting before a retry.
 
 4. **Deterministic randomness**  
    Randomness uses a **mulberry32** PRNG seeded from **RNG seed** plus an internal run counter, so you can reproduce a scenario by reusing the same seed and settings.

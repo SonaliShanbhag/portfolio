@@ -144,7 +144,7 @@ export default function App() {
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-400">
             In-browser simulation of workers pulling from a queue: random failures, exponential
-            backoff, retries, and a dead-letter list when attempts are exhausted—patterns you see in
+            backoff, retries, and a dead-letter list when attempts are exhausted - patterns you see in
             real job runners.
           </p>
         </header>
@@ -325,7 +325,7 @@ export default function App() {
             ) : (
               log.map((e, i) => (
                 <li key={e.t + "-" + i}>
-                  {new Date(e.t).toLocaleTimeString()} — {e.line}
+                  {new Date(e.t).toLocaleTimeString()} - {e.line}
                 </li>
               ))
             )}

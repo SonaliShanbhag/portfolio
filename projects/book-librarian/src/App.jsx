@@ -84,7 +84,7 @@ function BookCard({ book, showStar, isStarred, onToggleStar }) {
             </p>
           ) : (
             <p className="text-zinc-500">
-              No public aggregate rating found — open Goodreads below for community scores.
+              No public aggregate rating found - open Goodreads below for community scores.
             </p>
           )}
         </div>
@@ -246,7 +246,7 @@ export default function App() {
             <h1 className="font-display text-xl font-bold text-white">Personal librarian</h1>
             <p className="mt-1 text-sm text-zinc-400">
               Local <strong className="font-medium text-zinc-300">Ollama</strong> +{" "}
-              <strong className="font-medium text-zinc-300">Google Books</strong> — describe genres,
+              <strong className="font-medium text-zinc-300">Google Books</strong> - describe genres,
               comp titles, or the vibe you want.
             </p>
           </div>
@@ -441,7 +441,7 @@ export default function App() {
           <div className="mx-auto flex max-w-3xl gap-2 px-4 py-4">
             <textarea
               rows={2}
-              placeholder="e.g. I loved The Night Circus — something similarly lyrical but grounded in the real world…"
+              placeholder="e.g. I loved The Night Circus - something similarly lyrical but grounded in the real world…"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {

@@ -145,7 +145,7 @@ export default function App() {
           </h1>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-400">
             A request flows through a chain of services. Tune failure rates, latency, retries, and
-            timeouts to see cascading effects—similar to debugging orchestrated flows in production.
+            timeouts to see cascading effects - similar to debugging orchestrated flows in production.
           </p>
         </header>
 
@@ -201,7 +201,7 @@ export default function App() {
                 >
                   {result.ok
                     ? `Completed in ${result.totalLatencyMs}ms`
-                    : `Failed — ${result.totalLatencyMs}ms elapsed`}
+                    : `Failed - ${result.totalLatencyMs}ms elapsed`}
                 </p>
               )}
             </div>

@@ -2,7 +2,7 @@
 
 An **AI chat** that acts like a **personal librarian**: you describe genres, books you liked, or the kind of read you want, and it suggests **real titles** with **cover art**, a **short description** (from publisher metadata when available), and **aggregate star ratings** from **Google Books**.
 
-**Inference** runs on your machine via **[Ollama](https://ollama.com/)** (OpenAI-compatible API) — no OpenAI API key. **Goodreads** does not provide a public API; each card links to **Goodreads search** for community ratings and reviews.
+**Inference** runs on your machine via **[Ollama](https://ollama.com/)** (OpenAI-compatible API) - no OpenAI API key. **Goodreads** does not provide a public API; each card links to **Goodreads search** for community ratings and reviews.
 
 **UI:** **Chat** for recommendations, **Starred books** for a “want to read” list (saved in `localStorage` via **Save** on each card).
 

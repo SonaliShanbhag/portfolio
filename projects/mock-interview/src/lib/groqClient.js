@@ -1,7 +1,7 @@
 import { isJuniorLevel } from "./feedback.js";
 
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
-/** Groq free tier: fast models; swap if deprecated — check https://console.groq.com/docs/models */
+/** Groq free tier: fast models; swap if deprecated - check https://console.groq.com/docs/models */
 export const DEFAULT_GROQ_MODEL = "llama-3.1-8b-instant";
 
 /**
@@ -44,12 +44,12 @@ export function buildSystemPrompt({ companyDisplay, role, level, hiringManagerNo
   const junior = isJuniorLevel(levelId);
 
   const coachBlock = junior
-    ? `Part 1 — Coach feedback (supportive, in-depth, intern/new grad bar): Write 5–8 sentences across 2 short paragraphs. They are not expected to match senior depth. Structure:
+    ? `Part 1 - Coach feedback (supportive, in-depth, intern/new grad bar): Write 5–8 sentences across 2 short paragraphs. They are not expected to match senior depth. Structure:
 (1) One sentence on what worked (clarity, effort, or a good instinct);
-(2) One or two specific, kind improvements tied to their text (ownership, outcome, or simple technical reasoning) — frame as "next step," not failure;
+(2) One or two specific, kind improvements tied to their text (ownership, outcome, or simple technical reasoning) - frame as "next step," not failure;
 (3) One small practice drill (2–5 minutes).
 Do not repeat the interview question verbatim. Encourage growth; avoid harsh or discouraging language.`
-    : `Part 1 — Coach feedback (strict, in-depth): Write 6–10 sentences across 2–3 short paragraphs. Structure explicitly:
+    : `Part 1 - Coach feedback (strict, in-depth): Write 6–10 sentences across 2–3 short paragraphs. Structure explicitly:
 (1) One sentence on what (if anything) met the bar for this question type;
 (2) Two or more specific gaps (missing ownership, missing outcome, missing tradeoffs, shallow technical depth, unclear structure, etc.) tied to what they actually wrote;
 (3) One concrete practice drill or rewrite instruction they could do in 5 minutes.
@@ -57,20 +57,20 @@ Do not repeat the interview question verbatim. Do not give generic praise if the
 
   return `You are a hiring manager conducting a realistic mock interview for ${companyDisplay}. The candidate is applying for: ${role}. Level: ${level}.
 
-Context (illustrative — use as tone and theme guidance, not verbatim facts about the company):
+Context (illustrative - use as tone and theme guidance, not verbatim facts about the company):
 ${hiringManagerNote}
 
 Rules:
 - Stay in character as a professional hiring manager. Be concise.
-- Mix behavioral and technical questions appropriate to the level. Senior candidates get more system design and leadership depth; interns and new grads get fundamentals, learning mindset, and reasonable-scope problems — not trick senior-only design grills.
+- Mix behavioral and technical questions appropriate to the level. Senior candidates get more system design and leadership depth; interns and new grads get fundamentals, learning mindset, and reasonable-scope problems - not trick senior-only design grills.
 - Do not ask illegal interview questions (age, family status, religion, etc.).
 - This is practice: you may reference commonly discussed interview themes for large tech companies, but do not claim insider knowledge or confidential processes.
 
 **Response format (required):** Every reply must be exactly two parts separated by a line containing only three dashes: ---
 ${coachBlock}
-Part 2 — Interviewer: Brief transition, then ONE next interview question (behavioral or technical), OR a short wrap-up if the candidate said they are done.
+Part 2 - Interviewer: Brief transition, then ONE next interview question (behavioral or technical), OR a short wrap-up if the candidate said they are done.
 
-In part 2, never praise a thin, off-topic, or one-word answer (do not say "great answer," "useful answer," or similar). For weak answers use neutral transitions only: e.g. "Thanks — let's move on," "Here's the next question." Reserve warmer acknowledgment for substantive replies.
+In part 2, never praise a thin, off-topic, or one-word answer (do not say "great answer," "useful answer," or similar). For weak answers use neutral transitions only: e.g. "Thanks - let's move on," "Here's the next question." Reserve warmer acknowledgment for substantive replies.
 
 Keep part 2 under ~160 words.`;
 }
@@ -82,8 +82,8 @@ Reply with ONLY valid JSON (no markdown fences), exactly this shape:
 
 Rules:
 - Scores are integers from 1 to 5. Be strict: short, vague, or off-topic answers must pull scores down.
-- behavioralScore: STAR-style clarity, first-person ownership, measurable or qualitative outcomes, reflection — penalize missing outcomes or ownership.
-- technicalScore: mechanisms, tradeoffs, constraints, failure modes, validation — penalize hand-waving or buzzwords without reasoning.
+- behavioralScore: STAR-style clarity, first-person ownership, measurable or qualitative outcomes, reflection - penalize missing outcomes or ownership.
+- technicalScore: mechanisms, tradeoffs, constraints, failure modes, validation - penalize hand-waving or buzzwords without reasoning.
 - overallScore: holistic bar for the role (not necessarily the average of the two); thin transcripts should rarely exceed 3.
 - summary: 2–4 sentences with specific strengths and gaps (reference patterns from the transcript, not generic advice).
 - workOn: 4–6 concrete, prioritized practice items (drills, structures to rehearse, types of detail to add).
@@ -95,9 +95,9 @@ Reply with ONLY valid JSON (no markdown fences), exactly this shape:
 {"behavioralScore":1,"technicalScore":1,"overallScore":1,"summary":"string","workOn":["string"]}
 
 Calibration (lenient for level):
-- Scores are integers from 1 to 5. A solid, clear performance often lands at 3; 4 means clearly strong for intern/new grad; 5 is exceptional maturity and signal — rare.
-- behavioralScore: learning mindset, ownership where possible, communication, any outcome or lesson — do not demand senior metrics.
-- technicalScore: sound reasoning, fundamentals, ability to discuss tradeoffs simply — not full production system design.
+- Scores are integers from 1 to 5. A solid, clear performance often lands at 3; 4 means clearly strong for intern/new grad; 5 is exceptional maturity and signal - rare.
+- behavioralScore: learning mindset, ownership where possible, communication, any outcome or lesson - do not demand senior metrics.
+- technicalScore: sound reasoning, fundamentals, ability to discuss tradeoffs simply - not full production system design.
 - overallScore: holistic for the level; reward preparation and clarity.
 - summary: 2–4 sentences, honest but encouraging; reference patterns from the transcript.
 - workOn: 4–6 gentle, actionable practice items suited to early-career candidates.
@@ -139,7 +139,7 @@ export async function groqEvaluateInterview({ apiKey, transcript, model = DEFAUL
   try {
     return parseEvaluationJson(text);
   } catch {
-    throw new Error("Could not parse evaluation JSON — try End interview again.");
+    throw new Error("Could not parse evaluation JSON - try End interview again.");
   }
 }
 

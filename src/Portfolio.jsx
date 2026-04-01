@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useId, useState } from "react";
 import photo from "./assets/photo.png";
 
 const EXPERIENCE = [
@@ -6,9 +6,9 @@ const EXPERIENCE = [
     title: "Software Engineer II",
     company: "Adobe",
     location: "San Jose",
-    range: "Dec 2024 — Present",
+    range: "Dec 2024 - Present",
     highlights: [
-      "Architected and integrated core backend components for the Marketo Fulfillment Service (MFS), including DNS routing, fragment services, subscription provisioning, and Orion subprocess orchestration—building and consuming REST APIs across 15+ downstream dependencies.",
+      "Architected and integrated core backend components for the Marketo Fulfillment Service (MFS), including DNS routing, fragment services, subscription provisioning, and Orion subprocess orchestration, building and consuming REST APIs across 15+ downstream dependencies.",
       "Designed and debugged multi-step workflows in a distributed environment, coordinating Camunda flows, REST orchestrators, and backend services to isolate root causes and reduce integration errors.",
       "Built ETL pipelines and SQL transformations for analytics; designed relational schemas for subscription metadata, bundle mappings, and service pod configurations.",
       "Led migration of ajob2bprovisioner to M1.5 architecture, achieving a 100% pass rate in staging through rapid adoption and creative problem-solving.",
@@ -19,7 +19,7 @@ const EXPERIENCE = [
     title: "Software Development Engineer",
     company: "CVS Health",
     location: "Chicago",
-    range: "Oct 2023 — Dec 2024",
+    range: "Oct 2023 - Dec 2024",
     highlights: [
       "Led UX redesign for the myPBM platform with advanced AG Grid features and Angular components for criteria filtering and creation, improving task completion speed for pharmacy technicians by ~30%.",
       "Developed front-end features that improved accessibility and navigation for pharmacy staff while optimizing interactions with large backend databases.",
@@ -33,7 +33,7 @@ const INTERNSHIPS = [
     title: "Software Development Intern",
     company: "CVS Health",
     location: "Remote",
-    range: "May 2023 — Aug 2023",
+    range: "May 2023 - Aug 2023",
     highlights: [
       "Built full-stack web features (React, Java, SQL) supporting formulary workflows.",
       "Automated regression tests and collaborated with product owners using Agile/Scrum.",
@@ -43,7 +43,7 @@ const INTERNSHIPS = [
     title: "Software Engineer Intern",
     company: "Adobe",
     location: "San Jose",
-    range: "May 2022 — Aug 2022",
+    range: "May 2022 - Aug 2022",
     highlights: [
       "Created React/Node components for automated marketing workflows, increasing user activity 26%.",
       "Built Rails-based staging environments for privacy request processing.",
@@ -54,7 +54,7 @@ const INTERNSHIPS = [
     title: "Software Engineer Intern",
     company: "Specific Diagnostics",
     location: "Mountain View",
-    range: "May 2021 — Aug 2021",
+    range: "May 2021 - Aug 2021",
     highlights: [
       "Developed barcode query tools and foreign-object detection modules.",
       "Implemented lossless CV-based compression, improving analytics traffic speed 30%.",
@@ -86,13 +86,13 @@ const SKILLS = [
 const EDUCATION = [
   {
     school: "University of Illinois Urbana-Champaign",
-    detail: "B.S. Computer Science — Graduated with High Honors",
-    range: "Aug 2020 — Aug 2023",
+    detail: "B.S. Computer Science - Graduated with High Honors",
+    range: "Aug 2020 - Aug 2023",
   },
   {
     school: "Saratoga High School",
     detail: "Graduated with High Honors",
-    range: "Aug 2016 — May 2020",
+    range: "Aug 2016 - May 2020",
   },
 ];
 
@@ -106,7 +106,48 @@ const LEADERSHIP = [
 const GITHUB_REPO =
   import.meta.env.VITE_GITHUB_REPO ?? "https://github.com/SonaliShanbhag/portfolio";
 
-function ProjectCard({ title, description, bullets, demoHref, sourceHref }) {
+/** Structured "Why?" body: personal angle, bullet list, personal tie-in. */
+function WhySections({ angle, listIntro, bullets, tieIn }) {
+  return (
+    <div className="mt-4 space-y-5 text-sm leading-relaxed text-zinc-400">
+      <section>
+        <div className="[&>p]:leading-relaxed">
+          {typeof angle === "string" ? <p>{angle}</p> : angle}
+        </div>
+      </section>
+      <section>
+        <p className="mb-2 text-zinc-500">{listIntro}</p>
+        <ul className="list-disc space-y-1.5 pl-5 marker:text-zinc-600">
+          {bullets.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      </section>
+      <section>
+        <div className="[&_p+p]:mt-3">{typeof tieIn === "string" ? <p>{tieIn}</p> : tieIn}</div>
+      </section>
+    </div>
+  );
+}
+
+function ProjectCard({ title, description, bullets, demoHref, sourceHref, why }) {
+  const [whyOpen, setWhyOpen] = useState(false);
+  const whyTitleId = useId();
+
+  useEffect(() => {
+    if (!whyOpen) return;
+    const onKey = (e) => {
+      if (e.key === "Escape") setWhyOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [whyOpen]);
+
   return (
     <article className="group flex flex-col rounded-2xl border border-white/10 bg-white/[0.02] p-6 transition hover:border-fuchsia-500/30 hover:shadow-[0_0_48px_-16px_rgba(217,70,239,0.25)]">
       <h3 className="font-display text-xl font-bold text-white">{title}</h3>
@@ -131,7 +172,43 @@ function ProjectCard({ title, description, bullets, demoHref, sourceHref }) {
         >
           View source
         </a>
+        <button
+          type="button"
+          onClick={() => setWhyOpen(true)}
+          className="inline-flex items-center justify-center rounded-lg border border-fuchsia-500/25 bg-fuchsia-500/5 px-4 py-2 text-sm font-medium text-fuchsia-200/90 transition hover:border-fuchsia-400/50 hover:bg-fuchsia-500/10 hover:text-fuchsia-100"
+        >
+          Why?
+        </button>
       </div>
+
+      {whyOpen && (
+        <div
+          className="fixed inset-0 z-[100] flex items-end justify-center p-4 sm:items-center"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={whyTitleId}
+        >
+          <button
+            type="button"
+            className="absolute inset-0 bg-zinc-950/50"
+            aria-label="Close"
+            onClick={() => setWhyOpen(false)}
+          />
+          <div className="relative z-10 max-h-[min(90vh,40rem)] w-full max-w-xl overflow-y-auto rounded-xl border border-zinc-700/40 bg-zinc-900/95 p-6 shadow-lg shadow-black/20 ring-1 ring-white/[0.04]">
+            <h4 id={whyTitleId} className="font-display pr-10 text-base font-semibold tracking-tight text-zinc-200">
+              {title}
+            </h4>
+            <div className="text-sm">{why}</div>
+            <button
+              type="button"
+              onClick={() => setWhyOpen(false)}
+              className="mt-6 w-full rounded-lg bg-zinc-800/60 py-2.5 text-sm font-medium text-zinc-400 transition hover:bg-zinc-800 hover:text-zinc-200"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </article>
   );
 }
@@ -168,6 +245,31 @@ export default function Portfolio() {
       bullets: ["Retry & timeout simulation", "Request flow visualization", "Failure injection"],
       demoHref: `${base}simulator/`,
       sourceHref: `${GITHUB_REPO}/tree/main/projects/distributed-simulator`,
+      why: (
+        <WhySections
+          angle={
+            <>
+              I built this because I kept running into vague discussions about &quot;resilience&quot; and
+              &quot;timeouts&quot; that were hard to internalize without seeing them in action. This
+              simulator lets me <em className="italic text-zinc-300">experiment with failure</em>. I can
+              literally watch how one slow service cascades into system-wide issues.
+            </>
+          }
+          listIntro="It's been especially useful for:"
+          bullets={[
+            "Developing intuition around retries, backoff, and circuit breakers",
+            "Understanding how small latency spikes can snowball",
+            "Practicing debugging distributed systems without needing a real production environment",
+          ]}
+          tieIn={
+            <>
+              Instead of just reading about distributed systems, I wanted a sandbox where I could break
+              things safely and actually <em className="italic text-zinc-300">see</em> why best practices
+              exist.
+            </>
+          }
+        />
+      ),
     },
     {
       title: "Async job queue",
@@ -176,14 +278,56 @@ export default function Portfolio() {
       bullets: ["Queue + worker architecture", "Retry strategies", "Monitoring-oriented design"],
       demoHref: `${base}queue/`,
       sourceHref: `${GITHUB_REPO}/tree/main/projects/async-job-queue`,
+      why: (
+        <WhySections
+          angle={
+            <>
+              I built this after realizing how many real-world systems rely on background
+              processing, but tutorials rarely go beyond simple examples. I wanted to understand what
+              happens <em className="italic text-zinc-300">after</em> you add a queue: retries, dead letters,
+              monitoring, and failure modes.
+            </>
+          }
+          listIntro="It's useful for:"
+          bullets={[
+            "Learning how to design reliable background job systems",
+            "Exploring tradeoffs in retry strategies and backoff",
+            "Thinking in terms of eventual consistency instead of synchronous flows",
+          ]}
+          tieIn='This project reflects my shift from building "toy apps" to thinking like a backend engineer, designing systems that keep working even when parts fail.'
+        />
+      ),
     },
     {
       title: "Personal librarian",
       description:
-        "Local Ollama chat that recommends books from genres, comp titles, and mood—then enriches picks with Google Books covers, blurbs, and aggregate ratings.",
+        "Local Ollama chat that recommends books from genres, comp titles, and mood, then enriches picks with Google Books covers, blurbs, and aggregate ratings.",
       bullets: ["Ollama (local LLM)", "Google Books metadata", "Goodreads links for community scores"],
       demoHref: `${base}librarian/`,
       sourceHref: `${GITHUB_REPO}/tree/main/projects/book-librarian`,
+      why: (
+        <WhySections
+          angle={
+            <>
+              I built this because I often struggle to decide what to read next. Recommendations are
+              everywhere, but they&apos;re rarely{" "}
+              <em className="italic text-zinc-300">personalized to my mood</em>. This tool lets me describe
+              what I feel like reading and get curated suggestions enriched with real-world metadata.
+            </>
+          }
+          listIntro="It's useful for:"
+          bullets={[
+            'Turning vague preferences (“something thoughtful but not heavy”) into concrete recommendations',
+            "Combining LLM reasoning with structured data (Google Books, Goodreads)",
+            "Running locally, so I can experiment with AI without relying on cloud APIs",
+          ]}
+          tieIn={
+            <>
+              This is the most <span className="text-zinc-300">&quot;me&quot;</span> project. It solves a real habit in my life, and it let me explore how AI can feel genuinely helpful rather than gimmicky.
+            </>
+          }
+        />
+      ),
     },
     {
       title: "Mock interview coach",
@@ -192,6 +336,18 @@ export default function Portfolio() {
       bullets: ["Company-themed question tracks", "Offline or Groq (BYOK)", "Static-hosting friendly"],
       demoHref: `${base}interview/`,
       sourceHref: `${GITHUB_REPO}/tree/main/projects/mock-interview`,
+      why: (
+        <WhySections
+          angle="I built this to practice interviews in a way that feels realistic and repeatable. Preparing for interviews is stressful, and I wanted something that adapts to different companies and roles without needing another person."
+          listIntro="It's useful for:"
+          bullets={[
+            "Practicing behavioral and technical questions on demand",
+            "Simulating real interview pressure with structured prompts",
+            "Running offline or with your own API key, making it flexible and accessible",
+          ]}
+          tieIn="This project came directly from my own interview prep. It's something I wish I had earlier. It turns a stressful, inconsistent process into something I can iterate on and improve."
+        />
+      ),
     },
   ];
 
@@ -272,7 +428,7 @@ export default function Portfolio() {
                 in production.
               </p>
               <p className="leading-relaxed text-zinc-400">
-                I gravitate toward roles that emphasize design, reliability, scale, and performance—
+                I gravitate toward roles that emphasize design, reliability, scale, and performance,
                 and toward teams that treat observability and pragmatic tradeoffs as first-class.
               </p>
               <div>
@@ -317,7 +473,7 @@ export default function Portfolio() {
           <div className="mx-auto max-w-5xl px-6">
             <SectionTitle>Experience</SectionTitle>
             <p className="mt-3 max-w-2xl text-zinc-400">
-              Roles aligned with my resume—impact, stack, and scope.
+              Roles aligned with my resume (impact, stack, and scope).
             </p>
 
             <div className="mt-14 space-y-14">

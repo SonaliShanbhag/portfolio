@@ -2,10 +2,10 @@
 
 Personal site with interactive demos under `projects/`:
 
-- **`projects/distributed-simulator`** — request chain, retries, timeouts, failure injection  
-- **`projects/async-job-queue`** — queue, workers, backoff, dead-letter handling  
-- **`projects/book-librarian`** — Ollama + Google Books: librarian-style recommendations with covers, blurbs, and ratings  
-- **`projects/mock-interview`** — mock hiring-manager interviews (offline or Groq BYOK) for company + role  
+- **`projects/distributed-simulator`** - request chain, retries, timeouts, failure injection  
+- **`projects/async-job-queue`** - queue, workers, backoff, dead-letter handling  
+- **`projects/book-librarian`** - Ollama + Google Books: librarian-style recommendations with covers, blurbs, and ratings  
+- **`projects/mock-interview`** - mock hiring-manager interviews (offline or Groq BYOK) for company + role  
 
 ## Local development
 
@@ -19,7 +19,7 @@ npm install --prefix projects/book-librarian
 npm install --prefix projects/mock-interview
 ```
 
-**Portfolio only** — main site on port 5173; routes **`/simulator/`**, **`/queue/`**, **`/librarian/`**, and **`/interview/`** will not work (Vite may log `http proxy error … ECONNREFUSED` because nothing is listening on ports 5174–5177).
+**Portfolio only** - main site on port 5173; routes **`/simulator/`**, **`/queue/`**, **`/librarian/`**, and **`/interview/`** will not work (Vite may log `http proxy error … ECONNREFUSED` because nothing is listening on ports 5174–5177).
 
 ```bash
 npm run dev

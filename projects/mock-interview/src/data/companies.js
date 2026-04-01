@@ -1,5 +1,5 @@
 /**
- * Curated themes and example questions (illustrative practice only — not affiliated with any employer).
+ * Curated themes and example questions (illustrative practice only - not affiliated with any employer).
  */
 
 export const LEVELS = [

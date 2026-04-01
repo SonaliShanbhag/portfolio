@@ -64,7 +64,7 @@ function FinalScoreCard({ evaluation }) {
   return (
     <div className="rounded-2xl border border-emerald-500/25 bg-emerald-950/20 p-6">
       <h3 className="font-display text-lg font-bold text-white">Final interview report</h3>
-      <p className="mt-1 text-xs text-zinc-500">Illustrative scores — keep practicing with real humans when possible.</p>
+      <p className="mt-1 text-xs text-zinc-500">Illustrative scores - keep practicing with real humans when possible.</p>
       <div className="mt-5 grid gap-4 sm:grid-cols-3">
         {[
           { label: "Behavioral", value: b },
@@ -376,7 +376,7 @@ export default function App() {
 
       <main className="relative mx-auto max-w-3xl px-4 py-8">
         <p className="mb-6 rounded-xl border border-amber-500/20 bg-amber-950/20 px-4 py-3 text-sm text-amber-100/90">
-          Practice only — not affiliated with any employer. Questions are illustrative; verify expectations with
+          Practice only - not affiliated with any employer. Questions are illustrative; verify expectations with
           your recruiter.
         </p>
 
@@ -396,8 +396,8 @@ export default function App() {
               {company.trim() && (
                 <p className="mt-2 text-xs text-zinc-500">
                   {resolved.matched
-                    ? `Matched profile: ${resolved.profile.id} — themes loaded.`
-                    : `No curated profile for "${resolved.profile.displayName}" — using generic themes with your company name.`}
+                    ? `Matched profile: ${resolved.profile.id} - themes loaded.`
+                    : `No curated profile for "${resolved.profile.displayName}" - using generic themes with your company name.`}
                 </p>
               )}
             </div>
