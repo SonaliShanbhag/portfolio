@@ -39,3 +39,18 @@ npm run build --prefix projects/book-librarian
 ```
 
 Output is static files under `dist/` (suitable for GitHub Pages when copied into the main site’s `dist/librarian/`). A static deploy cannot reach Ollama unless the viewer runs Ollama locally or you point **API base URL** at a reachable server.
+
+### CORS / `403` on `OPTIONS /api/chat`
+
+The browser only talks to Ollama directly when the app is **not** using the dev proxy (production build, or `VITE_OLLAMA_BASE_URL=http://127.0.0.1:11434`). Then the **page origin** (e.g. `https://YOUR_USER.github.io`) must be allowed by Ollama.
+
+Before starting Ollama, allow your GitHub Pages origin (and keep localhost):
+
+```bash
+export OLLAMA_ORIGINS="https://YOUR_USER.github.io,http://localhost:5173,http://127.0.0.1:5173,http://localhost:4173"
+ollama serve
+```
+
+Use your real site URL if it includes a repo path (e.g. `https://YOUR_USER.github.io/portfolio/`). For a quick local-only test, some setups accept `OLLAMA_ORIGINS=*` (check [Ollama docs](https://github.com/ollama/ollama/blob/main/docs/faq.md) for your version).
+
+**Local dev:** leave **`VITE_OLLAMA_BASE_URL` unset** so the app uses **`/api/ollama`** (Vite proxy) and avoids browser CORS to Ollama.
