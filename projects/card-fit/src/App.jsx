@@ -139,7 +139,7 @@ function ColumnMappingForm({ headers, mapping, setMapping, disabled }) {
           onChange={(e) => set({ description: e.target.value || null })}
           disabled={disabled}
         >
-          <option value="">—</option>
+          <option value="">-</option>
           {headers.map((h) => (
             <option key={h} value={h}>
               {h}
@@ -156,7 +156,7 @@ function ColumnMappingForm({ headers, mapping, setMapping, disabled }) {
           onChange={(e) => set({ date: e.target.value || null })}
           disabled={disabled}
         >
-          <option value="">—</option>
+          <option value="">-</option>
           {headers.map((h) => (
             <option key={h} value={h}>
               {h}
@@ -190,14 +190,14 @@ function ColumnMappingForm({ headers, mapping, setMapping, disabled }) {
 
       {mapping.mode === "amount" ? (
         <label className="block text-xs text-zinc-500">
-          Amount (charges may be negative — we normalize)
+          Amount (charges may be negative; we normalize)
           <select
             className="mt-1 w-full rounded-lg border border-white/10 bg-[#070708] px-3 py-2 text-sm text-zinc-200"
             value={mapping.amountCol ?? ""}
             onChange={(e) => set({ amountCol: e.target.value || null })}
             disabled={disabled}
           >
-            <option value="">—</option>
+            <option value="">-</option>
             {headers.map((h) => (
               <option key={h} value={h}>
                 {h}
@@ -215,7 +215,7 @@ function ColumnMappingForm({ headers, mapping, setMapping, disabled }) {
               onChange={(e) => set({ debitCol: e.target.value || null })}
               disabled={disabled}
             >
-              <option value="">—</option>
+              <option value="">-</option>
               {headers.map((h) => (
                 <option key={h} value={h}>
                   {h}
@@ -231,7 +231,7 @@ function ColumnMappingForm({ headers, mapping, setMapping, disabled }) {
               onChange={(e) => set({ creditCol: e.target.value || null })}
               disabled={disabled}
             >
-              <option value="">—</option>
+              <option value="">-</option>
               {headers.map((h) => (
                 <option key={h} value={h}>
                   {h}
@@ -305,7 +305,7 @@ function CardDetailBody({ card, result }) {
           </tbody>
         </table>
         {result.lines.length === 0 && (
-          <p className="text-zinc-500">No categorized spend — check CSV or mapping.</p>
+          <p className="text-zinc-500">No categorized spend. Check CSV or mapping.</p>
         )}
       </div>
     </>
@@ -376,7 +376,7 @@ function FeeBreakEvenBlock({ feeBreakEven: be }) {
         {be.additionalAnnualMarginal != null && be.margin > 0 && (
           <p>
             Versus the {(be.defaultRate * 100).toFixed(1)}% default rate, the uplift in {be.bestCategoryLabel} is{" "}
-            {(be.margin * 100).toFixed(2)} percentage points — shifting roughly{" "}
+            {(be.margin * 100).toFixed(2)} percentage points, shifting roughly{" "}
             <span className="text-zinc-200">{formatMoney(be.additionalAnnualMarginal)}</span> of annual spend into that
             category could close the gap (illustrative).
           </p>
@@ -435,7 +435,7 @@ function MerchantOverrides({ rollup, busy, overrides, onChangeCategory, onClearO
                   {overrides[row.key] != null && (
                     <button
                       type="button"
-                      title="Remove override — use auto rules"
+                      title="Remove override; use auto rules"
                       disabled={busy}
                       onClick={() => onClearOverride(row.key)}
                       className="text-[10px] text-zinc-500 underline decoration-zinc-600 hover:text-zinc-300 disabled:opacity-40"
@@ -461,7 +461,7 @@ function PdfReviewPanel({ review, onUpdateRow, onDeleteRow, onAddRow, onConfirm,
       <h3 className="font-display text-base font-semibold text-white">Review PDF extraction</h3>
       <p className="mt-2 text-xs leading-relaxed text-zinc-400">
         Parsed {review.stats.matched} lines that look like transactions from {review.stats.lineCount} text lines. PDF
-        layouts vary — fix or delete rows before continuing. Amounts should follow your bank&apos;s sign (often negative
+        layouts vary; fix or delete rows before continuing. Amounts should follow your bank&apos;s sign (often negative
         for purchases).
       </p>
       <div className="mt-4 max-h-80 overflow-auto rounded-lg border border-white/10">
@@ -561,7 +561,7 @@ function CardRankings({ ranked }) {
           Your top 5 card matches
         </h2>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-500">
-          Ranked by estimated net value for your spend mix. Plastic-style cards are illustrative — not an offer or
+          Ranked by estimated net value for your spend mix. Plastic-style cards are illustrative, not an offer or
           approval. Not financial advice.
         </p>
 
@@ -721,7 +721,7 @@ function CardRankings({ ranked }) {
         )}
 
         {totalSpend <= 0 && (
-          <p className="mt-6 text-sm text-amber-200/80">No spend found — verify amount column and sign convention.</p>
+          <p className="mt-6 text-sm text-amber-200/80">No spend found. Verify amount column and sign convention.</p>
         )}
       </div>
     </section>
@@ -804,7 +804,7 @@ export default function App() {
       const { rows, stats } = parseStatementText(text);
       if (rows.length === 0) {
         setError(
-          "No transaction-like lines found in this PDF. Issuer layouts differ — try a CSV export, or another statement.",
+          "No transaction-like lines found in this PDF. Issuer layouts differ; try a CSV export, or another statement.",
         );
         return;
       }
@@ -1012,7 +1012,7 @@ export default function App() {
         <h1 className="font-display mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">Card Fit</h1>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-400 md:text-base">
           Upload a CSV or a statement PDF (text extracted in your browser). Fix extracted rows, map columns, then get
-          categories, fee break-even hints, and ranked cards — all locally.
+          categories, fee break-even hints, and ranked cards, all locally.
         </p>
       </header>
 
