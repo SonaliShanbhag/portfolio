@@ -69,6 +69,8 @@ Then open `/simulator/`, `/queue/`, `/librarian/`, `/interview/`, and `/card-fit
 
 The workflow sets `VITE_GITHUB_REPO` to `https://github.com/<owner>/<repo>` automatically so demo cards link to the correct source tree.
 
+Optional: add a repository **Actions variable** named `REWARD_OPTIMIZER_DEMO` if you need a different URL than the default. The build passes it through as `VITE_REWARD_OPTIMIZER_DEMO`. The portfolio code defaults **Open demo** to the live Vercel app unless you override. For local dev, set `VITE_REWARD_OPTIMIZER_DEMO` in `.env` (see `.env.example`).
+
 If your site URL is `https://<user>.github.io/<repo>/`, relative links (`./simulator/`, `./queue/`, `./librarian/`) match that layout.
 
 **Personal librarian demo:** GitHub Pages only hosts static files. The app talks to **Ollama on your machine** (`127.0.0.1:11434` by default). Visitors who only open the public URL will not have your Ollama running; for a live chat demo, run Ollama locally and open the site (or record a short video for reviewers). Do not expose Ollama to the public internet without authentication.

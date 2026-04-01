@@ -30,6 +30,8 @@ jobs:
       - name: Build site and demos
         env:
           VITE_GITHUB_REPO: https://github.com/${{ github.repository }}
+          # Optional repo variable: Settings → Secrets and variables → Actions → Variables → REWARD_OPTIMIZER_DEMO
+          VITE_REWARD_OPTIMIZER_DEMO: ${{ vars.REWARD_OPTIMIZER_DEMO }}
         run: npm run build:all
       - uses: actions/upload-pages-artifact@v3
         with:

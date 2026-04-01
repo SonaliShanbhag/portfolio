@@ -106,6 +106,11 @@ const LEADERSHIP = [
 const GITHUB_REPO =
   import.meta.env.VITE_GITHUB_REPO ?? "https://github.com/SonaliShanbhag/portfolio";
 
+/** Deployed Reward Optimizer on Vercel. Override with `VITE_REWARD_OPTIMIZER_DEMO` in `.env` if the URL changes. */
+const REWARD_OPTIMIZER_DEMO =
+  import.meta.env.VITE_REWARD_OPTIMIZER_DEMO?.trim() ||
+  "https://portfolio-tau-three-jcci2viy7z.vercel.app/";
+
 /** Structured "Why?" body: personal angle, bullet list, personal tie-in. */
 function WhySections({ angle, listIntro, bullets, tieIn }) {
   return (
@@ -158,12 +163,17 @@ function ProjectCard({ title, description, bullets, demoHref, sourceHref, why })
         ))}
       </ul>
       <div className="mt-6 flex flex-wrap gap-3">
+        {demoHref ? (
         <a
           href={demoHref}
+          {...(/^https?:\/\//i.test(demoHref)
+            ? { target: "_blank", rel: "noopener noreferrer" }
+            : {})}
           className="inline-flex items-center justify-center rounded-lg bg-fuchsia-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-fuchsia-500"
         >
           Open demo
         </a>
+        ) : null}
         <a
           href={sourceHref}
           target="_blank"
@@ -372,6 +382,31 @@ export default function Portfolio() {
             "Run analysis in the browser unless a later feature clearly needs opt-in cloud",
           ]}
           tieIn="It pulls together what I like building in production: shaping messy exports into something reliable, keeping the logic explainable, and UX that has to earn trust when the inputs are personal."
+        />
+      ),
+    },
+    {
+      title: "Reward Optimizer",
+      description:
+        "Card Fit add-on: upload transactions or paste rows, pick the best card per category from fixed reward rates, see totals per card. Next.js API on Vercel; no accounts in MVP.",
+      bullets: ["CSV or manual rows", "Category-based best card", "Serverless /api/optimize"],
+      demoHref: REWARD_OPTIMIZER_DEMO,
+      sourceHref: `${GITHUB_REPO}/tree/main/projects/reward-optimizer`,
+      why: (
+        <WhySections
+          angle={
+            <>
+              Card Fit ranks cards from your spending file; Reward Optimizer answers a narrower question:{" "}
+              <em className="italic text-zinc-300">for each purchase</em>, which card wins on that category?
+              It reuses the same mental model (rates × spend) in a transaction-first UI.
+            </>
+          }
+          listIntro="Why a separate deploy:"
+          bullets={[
+            "The portfolio site on GitHub Pages is static; this app needs a host that runs Next.js serverless routes.",
+            "The live demo is on Vercel; you can override the link with VITE_REWARD_OPTIMIZER_DEMO if you change deployments.",
+          ]}
+          tieIn="It is intentionally small: prove the scoring path end-to-end, then grow with auth and storage when the workflow deserves it."
         />
       ),
     },
