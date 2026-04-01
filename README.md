@@ -7,6 +7,7 @@ Personal site with interactive demos under `projects/`:
 - **`projects/book-librarian`** - Ollama + Google Books: librarian-style recommendations with covers, blurbs, and ratings  
 - **`projects/mock-interview`** - mock hiring-manager interviews (offline or Groq BYOK) for company + role  
 - **`projects/card-fit`** - CSV/PDF spending analysis, merchant overrides, fee break-even, card ranking (local-first)  
+- **`projects/reward-optimizer`** - Next.js + Vercel: best card per transaction from category rewards (Card Fit add-on; separate dev server)
 
 ## Local development
 
@@ -19,7 +20,16 @@ npm install --prefix projects/async-job-queue
 npm install --prefix projects/book-librarian
 npm install --prefix projects/mock-interview
 npm install --prefix projects/card-fit
+npm install --prefix projects/reward-optimizer
 ```
+
+**Reward Optimizer** is a Next.js app (not served by the main Vite portfolio). Run it on its own:
+
+```bash
+npm run dev --prefix projects/reward-optimizer
+```
+
+Then open `http://localhost:5179`.
 
 **Portfolio only** - main site on port 5173; routes **`/simulator/`**, **`/queue/`**, **`/librarian/`**, **`/interview/`**, and **`/card-fit/`** will not work (Vite may log `http proxy error … ECONNREFUSED` because nothing is listening on ports 5174–5178).
 
