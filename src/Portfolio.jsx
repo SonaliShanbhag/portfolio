@@ -185,6 +185,14 @@ export default function Portfolio() {
       demoHref: `${base}librarian/`,
       sourceHref: `${GITHUB_REPO}/tree/main/projects/book-librarian`,
     },
+    {
+      title: "Mock interview coach",
+      description:
+        "Hiring-manager practice for a chosen company and role: curated behavioral and technical prompts, or a dynamic session with your own Groq API key (free tier). Offline mode needs no backend.",
+      bullets: ["Company-themed question tracks", "Offline or Groq (BYOK)", "Static-hosting friendly"],
+      demoHref: `${base}interview/`,
+      sourceHref: `${GITHUB_REPO}/tree/main/projects/mock-interview`,
+    },
   ];
 
   return (

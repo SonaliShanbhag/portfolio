@@ -26,7 +26,7 @@ jobs:
       - name: Install root dependencies
         run: npm ci
       - name: Install project dependencies
-        run: npm ci --prefix projects/distributed-simulator && npm ci --prefix projects/async-job-queue && npm ci --prefix projects/book-librarian
+        run: npm ci --prefix projects/distributed-simulator && npm ci --prefix projects/async-job-queue && npm ci --prefix projects/book-librarian && npm ci --prefix projects/mock-interview
       - name: Build site and demos
         env:
           VITE_GITHUB_REPO: https://github.com/${{ github.repository }}
