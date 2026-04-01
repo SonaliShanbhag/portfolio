@@ -272,6 +272,22 @@ function CardDetailBody({ card, result }) {
           <span className="text-zinc-200">{formatMoney(result.grossRewards)}</span>
         </div>
       </div>
+      {card.applyUrl && (
+        <p className="mt-3">
+          <a
+            href={card.applyUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-500/35 bg-emerald-500/10 px-3 py-2 text-xs font-medium text-emerald-200/95 transition hover:border-emerald-400/50 hover:bg-emerald-500/15"
+          >
+            Apply on issuer site
+            <span aria-hidden className="text-emerald-400/80">
+              ↗
+            </span>
+          </a>
+          <span className="ml-2 text-[10px] text-zinc-500">Opens the bank&apos;s site; Card Fit is not affiliated.</span>
+        </p>
+      )}
       {card.annualFee > 0 && (
         <>
           <FeeVsGrossBar fee={card.annualFee} gross={result.grossRewards} />

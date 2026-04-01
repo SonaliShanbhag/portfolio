@@ -9,6 +9,7 @@
  *   issuer: string,
  *   name: string,
  *   annualFee: number,
+ *   applyUrl: string,
  *   valuationNote: string,
  *   rates: Record<string, number>,
  *   defaultRate: number,
@@ -27,6 +28,7 @@ export const CARDS = [
     rates: {},
     defaultRate: 0.02,
     blurb: "Simple 2% on everything when you pay (two-step earn).",
+    applyUrl: "https://www.citi.com/credit-cards/citi-double-cash-credit-card",
   },
   {
     id: "wf-active-cash",
@@ -37,6 +39,7 @@ export const CARDS = [
     rates: {},
     defaultRate: 0.02,
     blurb: "Flat 2% cash back on purchases.",
+    applyUrl: "https://www.wellsfargo.com/credit-cards/active-cash/",
   },
   {
     id: "cap-one-venture",
@@ -47,6 +50,7 @@ export const CARDS = [
     rates: {},
     defaultRate: 0.02,
     blurb: "2× miles on every purchase; annual fee offsets best for higher spend.",
+    applyUrl: "https://www.capitalone.com/credit-cards/venture/",
   },
   {
     id: "chase-csp",
@@ -60,6 +64,7 @@ export const CARDS = [
     },
     defaultRate: 0.015,
     blurb: "Strong travel/dining multipliers; annual fee rewards travelers and diners.",
+    applyUrl: "https://creditcards.chase.com/rewards-credit-cards/sapphire/preferred",
   },
   {
     id: "chase-csr",
@@ -73,6 +78,7 @@ export const CARDS = [
     },
     defaultRate: 0.015,
     blurb: "Premium travel card; fee is justified only at high travel/dining volume (ignoring credits).",
+    applyUrl: "https://creditcards.chase.com/rewards-credit-cards/sapphire/reserve",
   },
   {
     id: "chase-freedom-unlimited",
@@ -86,6 +92,7 @@ export const CARDS = [
     },
     defaultRate: 0.015,
     blurb: "No annual fee; elevated dining/drugstore in this model.",
+    applyUrl: "https://creditcards.chase.com/cash-back-credit-cards/freedom/unlimited",
   },
   {
     id: "amex-gold",
@@ -99,6 +106,7 @@ export const CARDS = [
     },
     defaultRate: 0.011,
     blurb: "Dining & U.S. supermarket heavy spend; high fee — best for big grocery + dining budgets.",
+    applyUrl: "https://www.americanexpress.com/us/credit-cards/card/gold-card/",
   },
   {
     id: "amex-bcp",
@@ -113,6 +121,7 @@ export const CARDS = [
     },
     defaultRate: 0.01,
     blurb: "Supermarket & streaming focused; annual fee vs 3% Blue Cash Everyday tradeoff.",
+    applyUrl: "https://www.americanexpress.com/us/credit-cards/card/blue-cash-preferred/",
   },
   {
     id: "cap-one-savor",
@@ -126,6 +135,7 @@ export const CARDS = [
     },
     defaultRate: 0.01,
     blurb: "Dining and entertainment; fee makes sense with enough spend in those categories.",
+    applyUrl: "https://www.capitalone.com/credit-cards/savor/",
   },
   {
     id: "discover-it",
@@ -140,6 +150,7 @@ export const CARDS = [
     },
     defaultRate: 0.015,
     blurb: "Rotating categories — rough blended rate; real value varies by quarter.",
+    applyUrl: "https://www.discover.com/credit-cards/cash-back/it-card.html",
   },
   {
     id: "boa-customized",
@@ -154,6 +165,7 @@ export const CARDS = [
     },
     defaultRate: 0.01,
     blurb: "Flexible 3% category; BoA deposit bonuses not included.",
+    applyUrl: "https://www.bankofamerica.com/credit-cards/products/cash-rewards-credit-card/",
   },
   {
     id: "usb-altitude-go",
@@ -169,6 +181,7 @@ export const CARDS = [
     },
     defaultRate: 0.01,
     blurb: "Strong no-annual-fee dining card.",
+    applyUrl: "https://www.usbank.com/credit-cards/altitude-go-visa-signature-credit-card.html",
   },
   {
     id: "citi-custom-cash",
@@ -183,6 +196,7 @@ export const CARDS = [
     },
     defaultRate: 0.015,
     blurb: "5% on your top category (cap); blended model until you pick a focus category.",
+    applyUrl: "https://www.citi.com/credit-cards/citi-custom-cash-card",
   },
   {
     id: "apple-card",
@@ -195,6 +209,7 @@ export const CARDS = [
     },
     defaultRate: 0.015,
     blurb: "Best with Apple Pay; physical card is 1%.",
+    applyUrl: "https://www.apple.com/apple-card/",
   },
   {
     id: "bilt",
@@ -208,5 +223,6 @@ export const CARDS = [
     },
     defaultRate: 0.01,
     blurb: "Dining/travel tilt; rent rewards require Bilt rent flow.",
+    applyUrl: "https://www.bilt.com/rewards",
   },
 ];
