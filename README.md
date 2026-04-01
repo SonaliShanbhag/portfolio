@@ -1,9 +1,10 @@
 # Portfolio
 
-Personal site with two interactive demos under `projects/`:
+Personal site with interactive demos under `projects/`:
 
 - **`projects/distributed-simulator`** — request chain, retries, timeouts, failure injection  
 - **`projects/async-job-queue`** — queue, workers, backoff, dead-letter handling  
+- **`projects/book-librarian`** — Ollama + Google Books: librarian-style recommendations with covers, blurbs, and ratings  
 
 ## Local development
 
@@ -13,15 +14,16 @@ Install dependencies once at the repo root and in each project (or rely on the p
 npm install
 npm install --prefix projects/distributed-simulator
 npm install --prefix projects/async-job-queue
+npm install --prefix projects/book-librarian
 ```
 
-**Portfolio only** (demos will 404 unless you also run the two apps):
+**Portfolio only** — main site on port 5173; routes **`/simulator/`**, **`/queue/`**, and **`/librarian/`** will not work (Vite may log `http proxy error … ECONNREFUSED` because nothing is listening on ports 5174–5176).
 
 ```bash
 npm run dev
 ```
 
-**Portfolio + both demos** (recommended): runs the main site on port 5173 and proxies `/simulator/` and `/queue/` to the demo dev servers.
+**Portfolio + all demos** (recommended): starts the main site and the three demo Vite servers so the proxy works.
 
 ```bash
 npm run dev:all
@@ -31,7 +33,7 @@ Optional: create `.env` from `.env.example` and set `VITE_GITHUB_REPO` if the re
 
 ## Production build
 
-Builds the main site and copies the two demos into `dist/simulator` and `dist/queue`:
+Builds the main site and copies the demos into `dist/simulator`, `dist/queue`, and `dist/librarian`:
 
 ```bash
 npm run build:all
@@ -43,7 +45,7 @@ Preview the combined output:
 npm run preview
 ```
 
-Then open `/simulator/` and `/queue/` from the portfolio home page.
+Then open `/simulator/`, `/queue/`, and `/librarian/` from the portfolio home page.
 
 ## GitHub Pages
 
@@ -53,7 +55,9 @@ Then open `/simulator/` and `/queue/` from the portfolio home page.
 
 The workflow sets `VITE_GITHUB_REPO` to `https://github.com/<owner>/<repo>` automatically so demo cards link to the correct source tree.
 
-If your site URL is `https://<user>.github.io/<repo>/`, relative links (`./simulator/`, `./queue/`) match that layout.
+If your site URL is `https://<user>.github.io/<repo>/`, relative links (`./simulator/`, `./queue/`, `./librarian/`) match that layout.
+
+**Personal librarian demo:** GitHub Pages only hosts static files. The app talks to **Ollama on your machine** (`127.0.0.1:11434` by default). Visitors who only open the public URL will not have your Ollama running; for a live chat demo, run Ollama locally and open the site (or record a short video for reviewers). Do not expose Ollama to the public internet without authentication.
 
 ## Repository layout
 
@@ -62,4 +66,5 @@ If your site URL is `https://<user>.github.io/<repo>/`, relative links (`./simul
 | `src/` | Main portfolio React app |
 | `projects/distributed-simulator/` | Vite app → deployed to `dist/simulator/` |
 | `projects/async-job-queue/` | Vite app → deployed to `dist/queue/` |
+| `projects/book-librarian/` | Vite app → deployed to `dist/librarian/` |
 | `scripts/copy-projects.mjs` | Copies project builds into `dist/` after `vite build` |

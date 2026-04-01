@@ -20,5 +20,6 @@ copyDir(
   path.join(dist, "simulator"),
 );
 copyDir(path.join(root, "projects", "async-job-queue", "dist"), path.join(dist, "queue"));
+copyDir(path.join(root, "projects", "book-librarian", "dist"), path.join(dist, "librarian"));
 
-console.log("Copied projects into dist/simulator and dist/queue");
+console.log("Copied projects into dist/simulator, dist/queue, and dist/librarian");

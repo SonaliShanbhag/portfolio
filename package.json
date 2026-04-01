@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:all": "concurrently -n portfolio,sim,queue -c magenta,green,cyan \"vite\" \"npm run dev --prefix projects/distributed-simulator\" \"npm run dev --prefix projects/async-job-queue\"",
+    "dev:all": "concurrently -n portfolio,sim,queue,lib -c magenta,green,cyan,yellow \"vite\" \"npm run dev --prefix projects/distributed-simulator\" \"npm run dev --prefix projects/async-job-queue\" \"npm run dev --prefix projects/book-librarian\"",
     "build": "vite build",
-    "build:projects": "npm run build --prefix projects/distributed-simulator && npm run build --prefix projects/async-job-queue",
+    "build:projects": "npm run build --prefix projects/distributed-simulator && npm run build --prefix projects/async-job-queue && npm run build --prefix projects/book-librarian",
     "build:all": "npm run build && npm run build:projects && node scripts/copy-projects.mjs",
     "lint": "eslint .",
     "preview": "vite preview"

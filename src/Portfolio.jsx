@@ -177,6 +177,14 @@ export default function Portfolio() {
       demoHref: `${base}queue/`,
       sourceHref: `${GITHUB_REPO}/tree/main/projects/async-job-queue`,
     },
+    {
+      title: "Personal librarian",
+      description:
+        "Local Ollama chat that recommends books from genres, comp titles, and mood—then enriches picks with Google Books covers, blurbs, and aggregate ratings.",
+      bullets: ["Ollama (local LLM)", "Google Books metadata", "Goodreads links for community scores"],
+      demoHref: `${base}librarian/`,
+      sourceHref: `${GITHUB_REPO}/tree/main/projects/book-librarian`,
+    },
   ];
 
   return (

@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+@theme {
+  --font-family-sans: "DM Sans", system-ui, sans-serif;
+  --font-family-display: "Syne", system-ui, sans-serif;
+}
+
+body {
+  font-family: var(--font-family-sans);
+  -webkit-font-smoothing: antialiased;
+  background-color: #070708;
+  color: #e4e4e7;
+}
