@@ -371,7 +371,7 @@ export default function Portfolio() {
             "Show why a card ranks: categories, fees, caps, and assumptions",
             "Run analysis in the browser unless a later feature clearly needs opt-in cloud",
           ]}
-          tieIn="It lines up with work I already do: payments integrations, data pipelines, and UIs where sensitive data has to be handled carefully in production."
+          tieIn="It pulls together what I like building in production: shaping messy exports into something reliable, keeping the logic explainable, and UX that has to earn trust when the inputs are personal."
         />
       ),
     },
