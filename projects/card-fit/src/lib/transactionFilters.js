@@ -9,7 +9,8 @@
  */
 export function isExcludedMerchantLine(raw) {
   const s = (raw || "").trim();
-  if (!s) return true;
+  // Missing merchant text still counts as spend (e.g. odd CSV keys); categorize as "other" downstream.
+  if (!s) return false;
 
   const lower = s.toLowerCase();
 

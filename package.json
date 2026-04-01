@@ -7,6 +7,7 @@
     "dev": "vite",
     "dev:all": "concurrently -n portfolio,sim,queue,lib,iv,card -c magenta,green,cyan,yellow,blue,emerald \"vite\" \"npm run dev --prefix projects/distributed-simulator\" \"npm run dev --prefix projects/async-job-queue\" \"npm run dev --prefix projects/book-librarian\" \"npm run dev --prefix projects/mock-interview\" \"npm run dev --prefix projects/card-fit\"",
     "build": "vite build",
+    "build:card-fit": "npm run build --prefix projects/card-fit",
     "build:projects": "npm run build --prefix projects/distributed-simulator && npm run build --prefix projects/async-job-queue && npm run build --prefix projects/book-librarian && npm run build --prefix projects/mock-interview && npm run build --prefix projects/card-fit",
     "build:all": "npm run build && npm run build:projects && node scripts/copy-projects.mjs",
     "lint": "eslint .",

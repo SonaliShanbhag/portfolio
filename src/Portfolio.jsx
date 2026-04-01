@@ -352,27 +352,26 @@ export default function Portfolio() {
     {
       title: "Card Fit",
       description:
-        "CSV or PDF (in-browser text extract + editable parse), merchant overrides, fee vs rewards and break-even hints, ranked cards — Web Worker analysis, schema v2 JSON export.",
-      bullets: ["PDF or CSV ingest", "Merchant overrides & fee break-even", "Local-first; no bank linking"],
+        "CSV or PDF with in-browser parsing and edits, merchant overrides, fee and break-even hints, ranked cards. Web Worker analysis and JSON export.",
+      bullets: ["PDF or CSV ingest", "Merchant overrides and fee break-even", "Local-first; no bank linking"],
       demoHref: `${base}card-fit/`,
       sourceHref: `${GITHUB_REPO}/tree/main/projects/card-fit`,
       why: (
         <WhySections
           angle={
             <>
-              Credit card marketing highlights the best multipliers, but not{" "}
-              <em className="italic text-zinc-300">your</em> mix of groceries, travel, and dining. I want to explore
-              how structured data plus clear rules can help someone compare products using their own history — without
-              turning it into black-box advice.
+              Ads quote great multipliers, not how much <em className="italic text-zinc-300">you</em> spend on groceries,
+              travel, or dining. Card Fit scores cards from your own export using rules you can read, so it stays a
+              spreadsheet-style comparison, not an opaque score.
             </>
           }
-          listIntro="The direction:"
+          listIntro="What I focused on:"
           bullets={[
-            "Start from exports users already have (CSV), not live bank linking",
+            "Use files people already have (CSV or PDF), not bank linking",
             "Show why a card ranks: categories, fees, caps, and assumptions",
-            "Keep sensitive processing local unless a future feature clearly justifies opt-in cloud",
+            "Run analysis in the browser unless a later feature clearly needs opt-in cloud",
           ]}
-          tieIn="This sits at the intersection of payments, data engineering, and trustworthy UX — areas I care about from shipping production systems and handling sensitive workflows."
+          tieIn="It lines up with work I already do: payments integrations, data pipelines, and UIs where sensitive data has to be handled carefully in production."
         />
       ),
     },
