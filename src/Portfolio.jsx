@@ -349,6 +349,33 @@ export default function Portfolio() {
         />
       ),
     },
+    {
+      title: "Card Fit",
+      description:
+        "CSV or PDF (in-browser text extract + editable parse), merchant overrides, fee vs rewards and break-even hints, ranked cards — Web Worker analysis, schema v2 JSON export.",
+      bullets: ["PDF or CSV ingest", "Merchant overrides & fee break-even", "Local-first; no bank linking"],
+      demoHref: `${base}card-fit/`,
+      sourceHref: `${GITHUB_REPO}/tree/main/projects/card-fit`,
+      why: (
+        <WhySections
+          angle={
+            <>
+              Credit card marketing highlights the best multipliers, but not{" "}
+              <em className="italic text-zinc-300">your</em> mix of groceries, travel, and dining. I want to explore
+              how structured data plus clear rules can help someone compare products using their own history — without
+              turning it into black-box advice.
+            </>
+          }
+          listIntro="The direction:"
+          bullets={[
+            "Start from exports users already have (CSV), not live bank linking",
+            "Show why a card ranks: categories, fees, caps, and assumptions",
+            "Keep sensitive processing local unless a future feature clearly justifies opt-in cloud",
+          ]}
+          tieIn="This sits at the intersection of payments, data engineering, and trustworthy UX — areas I care about from shipping production systems and handling sensitive workflows."
+        />
+      ),
+    },
   ];
 
   return (

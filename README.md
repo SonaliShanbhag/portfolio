@@ -6,6 +6,7 @@ Personal site with interactive demos under `projects/`:
 - **`projects/async-job-queue`** - queue, workers, backoff, dead-letter handling  
 - **`projects/book-librarian`** - Ollama + Google Books: librarian-style recommendations with covers, blurbs, and ratings  
 - **`projects/mock-interview`** - mock hiring-manager interviews (offline or Groq BYOK) for company + role  
+- **`projects/card-fit`** - CSV/PDF spending analysis, merchant overrides, fee break-even, card ranking (local-first)  
 
 ## Local development
 
@@ -17,9 +18,10 @@ npm install --prefix projects/distributed-simulator
 npm install --prefix projects/async-job-queue
 npm install --prefix projects/book-librarian
 npm install --prefix projects/mock-interview
+npm install --prefix projects/card-fit
 ```
 
-**Portfolio only** - main site on port 5173; routes **`/simulator/`**, **`/queue/`**, **`/librarian/`**, and **`/interview/`** will not work (Vite may log `http proxy error … ECONNREFUSED` because nothing is listening on ports 5174–5177).
+**Portfolio only** - main site on port 5173; routes **`/simulator/`**, **`/queue/`**, **`/librarian/`**, **`/interview/`**, and **`/card-fit/`** will not work (Vite may log `http proxy error … ECONNREFUSED` because nothing is listening on ports 5174–5178).
 
 ```bash
 npm run dev
@@ -35,7 +37,7 @@ Optional: create `.env` from `.env.example` and set `VITE_GITHUB_REPO` if the re
 
 ## Production build
 
-Builds the main site and copies the demos into `dist/simulator`, `dist/queue`, `dist/librarian`, and `dist/interview`:
+Builds the main site and copies the demos into `dist/simulator`, `dist/queue`, `dist/librarian`, `dist/interview`, and `dist/card-fit`:
 
 ```bash
 npm run build:all
@@ -47,7 +49,7 @@ Preview the combined output:
 npm run preview
 ```
 
-Then open `/simulator/`, `/queue/`, `/librarian/`, and `/interview/` from the portfolio home page.
+Then open `/simulator/`, `/queue/`, `/librarian/`, `/interview/`, and `/card-fit/` from the portfolio home page.
 
 ## GitHub Pages
 
@@ -70,4 +72,5 @@ If your site URL is `https://<user>.github.io/<repo>/`, relative links (`./simul
 | `projects/async-job-queue/` | Vite app → deployed to `dist/queue/` |
 | `projects/book-librarian/` | Vite app → deployed to `dist/librarian/` |
 | `projects/mock-interview/` | Vite app → deployed to `dist/interview/` |
+| `projects/card-fit/` | Vite app → deployed to `dist/card-fit/` |
 | `scripts/copy-projects.mjs` | Copies project builds into `dist/` after `vite build` |

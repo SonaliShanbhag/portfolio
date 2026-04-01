@@ -22,5 +22,8 @@ copyDir(
 copyDir(path.join(root, "projects", "async-job-queue", "dist"), path.join(dist, "queue"));
 copyDir(path.join(root, "projects", "book-librarian", "dist"), path.join(dist, "librarian"));
 copyDir(path.join(root, "projects", "mock-interview", "dist"), path.join(dist, "interview"));
+copyDir(path.join(root, "projects", "card-fit", "dist"), path.join(dist, "card-fit"));
 
-console.log("Copied projects into dist/simulator, dist/queue, dist/librarian, and dist/interview");
+console.log(
+  "Copied projects into dist/simulator, dist/queue, dist/librarian, dist/interview, and dist/card-fit",
+);

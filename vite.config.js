@@ -23,6 +23,10 @@ export default defineConfig(({ command }) => ({
         target: "http://localhost:5177",
         changeOrigin: true,
       },
+      "/card-fit": {
+        target: "http://localhost:5178",
+        changeOrigin: true,
+      },
       "/api/ollama": {
         target: "http://127.0.0.1:11434",
         changeOrigin: true,
