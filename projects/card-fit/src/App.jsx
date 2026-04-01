@@ -1,12 +1,8 @@
 import React, { useCallback, useMemo, useState } from "react";
 import Papa from "papaparse";
 import AnalysisWorker from "./analysis.worker.js?worker";
-import {
-  detectColumns,
-  parseCsvText,
-  rowsToTransactions,
-} from "./lib/csvParse.js";
-import { buildTransactions, aggregateByCategory, rankCards } from "./lib/score.js";
+import { detectColumns, parseCsvText } from "./lib/csvParse.js";
+import { aggregateByCategory, rankCards } from "./lib/score.js";
 import { computeMerchantRollup } from "./lib/merchantRollup.js";
 import { CATEGORY_ORDER, CATEGORY_LABELS, CATEGORY_COLORS } from "./lib/categories.js";
 
@@ -731,8 +727,6 @@ function CardRankings({ ranked }) {
 export default function App() {
   const [headers, setHeaders] = useState(/** @type {string[] | null} */ (null));
   const [rows, setRows] = useState(/** @type {Record<string, string>[] | null} */ (null));
-  /** Raw CSV text for Web Worker analysis (keeps main thread responsive on large files). */
-  const [csvText, setCsvText] = useState(/** @type {string | null} */ (null));
   const [mapping, setMapping] = useState(() => initialMappingFromHeaders([]));
   const [error, setError] = useState(/** @type {string | null} */ (null));
   const [busy, setBusy] = useState(false);
@@ -761,13 +755,11 @@ export default function App() {
     try {
       const { headers: h, rows: r } = parseCsvText(text);
       if (!h.length) throw new Error("No header row found.");
-      setCsvText(text);
       setHeaders(h);
       setRows(r);
       setMapping(initialMappingFromHeaders(h));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not parse CSV.");
-      setCsvText(null);
       setHeaders(null);
       setRows(null);
     }
@@ -781,7 +773,6 @@ export default function App() {
         loadCsv(text);
       } catch (e) {
         setError(e instanceof Error ? e.message : "Could not read file.");
-        setCsvText(null);
         setHeaders(null);
         setRows(null);
       } finally {
@@ -897,50 +888,39 @@ export default function App() {
       const rm = toRowMapping(mapping);
 
       try {
-        if (csvText) {
-          const worker = new AnalysisWorker();
-          await new Promise((resolve, reject) => {
-            const t = window.setTimeout(() => {
-              worker.terminate();
-              reject(new Error("Analysis timed out."));
-            }, 120000);
-            worker.onmessage = (ev) => {
-              window.clearTimeout(t);
-              worker.terminate();
-              const d = ev.data;
-              if (d.ok) {
-                setProfile(d.profile);
-                setRanked(d.ranked);
-                setMerchantRollup(d.merchantRollup ?? []);
-                resolve(undefined);
-              } else {
-                reject(new Error(d.error || "Worker failed."));
-              }
-            };
-            worker.onerror = (ev) => {
-              window.clearTimeout(t);
-              worker.terminate();
-              reject(ev.error ?? new Error("Worker error."));
-            };
-            worker.postMessage({ csvText, rowMapping: rm, overrides });
-          });
-        } else {
-          const raw = rowsToTransactions(rows, rm);
-          const txs = buildTransactions(raw, overrides);
-          const agg = aggregateByCategory(txs);
-          const list = rankCards(agg.byCategory, agg.totalSpend);
-          const rollup = computeMerchantRollup(txs);
-          setProfile(agg);
-          setRanked(list);
-          setMerchantRollup(rollup);
-        }
+        const worker = new AnalysisWorker();
+        await new Promise((resolve, reject) => {
+          const t = window.setTimeout(() => {
+            worker.terminate();
+            reject(new Error("Analysis timed out."));
+          }, 120000);
+          worker.onmessage = (ev) => {
+            window.clearTimeout(t);
+            worker.terminate();
+            const d = ev.data;
+            if (d.ok) {
+              setProfile(d.profile);
+              setRanked(d.ranked);
+              setMerchantRollup(d.merchantRollup ?? []);
+              resolve(undefined);
+            } else {
+              reject(new Error(d.error || "Worker failed."));
+            }
+          };
+          worker.onerror = (ev) => {
+            window.clearTimeout(t);
+            worker.terminate();
+            reject(ev.error ?? new Error("Worker error."));
+          };
+          worker.postMessage({ rows, rowMapping: rm, overrides });
+        });
       } catch (e) {
         setError(e instanceof Error ? e.message : "Analysis failed.");
       } finally {
         setBusy(false);
       }
     },
-    [rows, mapping, csvText, categoryOverrides],
+    [rows, mapping, categoryOverrides],
   );
 
   const onMerchantCategory = useCallback(
@@ -965,7 +945,6 @@ export default function App() {
   const reset = useCallback(() => {
     setHeaders(null);
     setRows(null);
-    setCsvText(null);
     setProfile(null);
     setRanked(null);
     setMerchantRollup(null);

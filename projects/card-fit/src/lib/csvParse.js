@@ -1,11 +1,14 @@
 import Papa from "papaparse";
 import { isExcludedMerchantLine } from "./transactionFilters.js";
 
-/** Matches common date column headers (whole header), e.g. "Transaction Date", "Post Date". */
+/**
+ * Matches date column headers (whole header). Do not match a lone "Transaction" column; that is often merchant text.
+ */
 const DATE_HEADER =
-  /^(transaction\s+date|trans(?:action)?\s*date|post(?:ed)?\s*date|date|posted|trans\.?|transaction)$/i;
-const AMOUNT_KEYS = /^(amount|debit|credit|transaction amount|amt)$/i;
-const DESC_KEYS = /^(description|merchant|payee|details|memo|name)$/i;
+  /^(transaction\s+date|trans(?:action)?\s*date|post(?:ed)?\s*date|post\s*date|posted\s+date|statement\s+date|date|posted)$/i;
+const AMOUNT_KEYS = /^(amount|debit|credit|transaction\s+amount|amt)$/i;
+/** "Transaction" alone is a common merchant column label (not a date). */
+const DESC_KEYS = /^(description|merchant|payee|details|memo|name|transaction)$/i;
 
 /**
  * @param {string} h
