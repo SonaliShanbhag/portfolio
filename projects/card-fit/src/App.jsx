@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import Papa from "papaparse";
 import AnalysisWorker from "./analysis.worker.js?worker";
 import { detectColumns, parseCsvText } from "./lib/csvParse.js";
@@ -981,13 +981,21 @@ export default function App() {
 
   const showResults = profile && ranked;
 
+  useEffect(() => {
+    if (showResults) {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    }
+  }, [showResults]);
+
   return (
     <div className="min-h-screen bg-[#050506]">
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(52,211,153,0.08),transparent)]" />
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_60%_40%_at_80%_20%,rgba(59,130,246,0.06),transparent)]" />
 
       <header className="relative border-b border-white/5 px-6 py-6">
-        <p className="text-xs font-medium uppercase tracking-[0.2em] text-emerald-400/90">Payments · Phase 4</p>
+        <p className="text-xs font-medium uppercase tracking-[0.2em] text-emerald-400/90">
+          Payments · Local analysis
+        </p>
         <h1 className="font-display mt-2 text-3xl font-bold tracking-tight text-white md:text-4xl">Card Fit</h1>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-zinc-400 md:text-base">
           Upload a CSV or a statement PDF (text extracted in your browser). Fix extracted rows, map columns, then get
