@@ -26,9 +26,12 @@ import { CardManager } from "@/components/CardManager";
 import { GuestCardsHint } from "@/components/GuestCardsHint";
 import { HowItWorks } from "@/components/HowItWorks";
 import { Phase3Panel } from "@/components/Phase3Panel";
+import { StatementPdfReview } from "@/components/StatementPdfReview";
+import { statementRowsToTransactions } from "@/lib/pdfImport";
+import type { StatementPdfRow } from "@/lib/statementParse";
 
 const emptyForm = { date: "", merchant: "", category: "groceries", amount: "" };
-const CATEGORIES = ["groceries", "travel", "dining", "gas", "entertainment", "other", "auto"];
+const CATEGORIES = ["groceries", "travel", "dining", "gas", "entertainment", "online", "other", "auto"];
 
 function toTransactionInput(tx: StoredTransaction): TransactionInput {
   return {
@@ -54,6 +57,12 @@ export function OptimizerApp() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [syncError, setSyncError] = useState<string | null>(null);
+  const [pdfReview, setPdfReview] = useState<{
+    rows: StatementPdfRow[];
+    stats: { lineCount: number; matched: number };
+  } | null>(null);
+  const [statementBusy, setStatementBusy] = useState(false);
+  const [pdfConfirmBusy, setPdfConfirmBusy] = useState(false);
 
   const transactionsForOptimize: TransactionInput[] = useMemo(() => {
     if (user) {
@@ -161,6 +170,37 @@ export function OptimizerApp() {
   const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    const lower = file.name.toLowerCase();
+    if (lower.endsWith(".pdf")) {
+      setStatementBusy(true);
+      setError(null);
+      setPdfReview(null);
+      try {
+        const [{ extractPdfText }, { parseStatementText }] = await Promise.all([
+          import("@/lib/pdfExtract"),
+          import("@/lib/statementParse"),
+        ]);
+        const buf = await file.arrayBuffer();
+        const text = await extractPdfText(buf);
+        const parsed = parseStatementText(text);
+        if (parsed.rows.length === 0) {
+          setError(
+            "No transaction-like lines found in this PDF. Issuer layouts differ — try a CSV export, fix text in a desktop PDF reader, or another statement.",
+          );
+          setResult(null);
+          return;
+        }
+        setPdfReview(parsed);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Could not read PDF");
+        setResult(null);
+      } finally {
+        setStatementBusy(false);
+      }
+      e.target.value = "";
+      return;
+    }
+
     try {
       const text = await file.text();
       let rows = parseTransactionsCsv(text);
@@ -176,6 +216,61 @@ export function OptimizerApp() {
       setResult(null);
     }
     e.target.value = "";
+  };
+
+  const updatePdfRow = (index: number, field: keyof StatementPdfRow, value: string) => {
+    setPdfReview((prev) => {
+      if (!prev) return prev;
+      const rows = prev.rows.map((r, i) => (i === index ? { ...r, [field]: value } : r));
+      return { ...prev, rows };
+    });
+  };
+
+  const deletePdfRow = (index: number) => {
+    setPdfReview((prev) => {
+      if (!prev) return prev;
+      return { ...prev, rows: prev.rows.filter((_, i) => i !== index) };
+    });
+  };
+
+  const addPdfRow = () => {
+    const empty: StatementPdfRow = {
+      "Transaction Date": "",
+      Description: "",
+      Amount: "",
+    };
+    setPdfReview((prev) => {
+      if (!prev) return { rows: [empty], stats: { lineCount: 0, matched: 0 } };
+      return { ...prev, rows: [...prev.rows, empty] };
+    });
+  };
+
+  const confirmPdfRows = async () => {
+    if (!pdfReview || pdfReview.rows.length === 0) return;
+    setPdfConfirmBusy(true);
+    setError(null);
+    try {
+      let txs = statementRowsToTransactions(pdfReview.rows);
+      txs = processRows(txs);
+      if (txs.length === 0) {
+        setError("No valid rows to import. Check dates, merchants, and amounts.");
+        return;
+      }
+      if (user && db) {
+        await replaceAllTransactions(db, user.uid, txs);
+      } else {
+        setLocalTx(txs);
+      }
+      setPdfReview(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not save transactions");
+    } finally {
+      setPdfConfirmBusy(false);
+    }
+  };
+
+  const cancelPdfReview = () => {
+    setPdfReview(null);
   };
 
   const loadSample = async () => {
@@ -303,6 +398,20 @@ export function OptimizerApp() {
         </div>
       )}
 
+      {pdfReview && (
+        <div className="no-print mb-8">
+          <StatementPdfReview
+            review={pdfReview}
+            busy={statementBusy || pdfConfirmBusy}
+            onUpdateRow={updatePdfRow}
+            onDeleteRow={deletePdfRow}
+            onAddRow={addPdfRow}
+            onConfirm={confirmPdfRows}
+            onCancel={cancelPdfReview}
+          />
+        </div>
+      )}
+
       <section className="grid gap-6 lg:grid-cols-2" aria-labelledby="spending-heading">
         <div className="no-print rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6">
           <p className="text-xs font-medium uppercase tracking-wider text-fuchsia-400/80">Step 1</p>
@@ -310,15 +419,30 @@ export function OptimizerApp() {
             Add your spending
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-[var(--muted)]">
-            Each row is one purchase. You can load a file from a spreadsheet app, try our sample list, or fill the form
-            below. For files, include at least <strong className="text-zinc-400">date</strong>,{" "}
+            Each row is one purchase. Load a CSV from your bank or spreadsheet, a credit card statement PDF (parsed in your
+            browser — like Card Fit — layouts vary; CSV exports are usually more reliable), try our sample list, or fill
+            the form below. For files, include at least <strong className="text-zinc-400">date</strong>,{" "}
             <strong className="text-zinc-400">merchant</strong>, and <strong className="text-zinc-400">amount</strong>.
             Category is optional — leave it blank or choose &quot;auto&quot; and we&apos;ll guess from the store name.
           </p>
-          <div className="mt-5 flex flex-wrap gap-3">
-            <label className="cursor-pointer rounded-lg bg-[var(--accent-dim)] px-4 py-2.5 text-sm font-medium text-white transition hover:opacity-90">
-              Choose a CSV file
-              <input type="file" accept=".csv,text/csv" className="sr-only" onChange={onFile} aria-label="Upload CSV file with transactions" />
+          {statementBusy && (
+            <p className="mt-3 text-xs text-sky-400/90" aria-live="polite">
+              Reading PDF…
+            </p>
+          )}
+          <div className="mt-5 flex flex-wrap items-center gap-3">
+            <label
+              className={`cursor-pointer rounded-lg bg-[var(--accent-dim)] px-4 py-2.5 text-sm font-medium text-white transition hover:opacity-90 ${statementBusy ? "pointer-events-none opacity-60" : ""}`}
+            >
+              Choose CSV or statement PDF
+              <input
+                type="file"
+                accept=".csv,.pdf,text/csv,application/pdf"
+                className="sr-only"
+                disabled={statementBusy}
+                onChange={onFile}
+                aria-label="Upload CSV file or credit card statement PDF with transactions"
+              />
             </label>
             <button
               type="button"

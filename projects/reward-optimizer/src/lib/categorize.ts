@@ -8,6 +8,10 @@ const RULES: { pattern: RegExp; category: string }[] = [
   { pattern: /\b(united|delta|american\s+air|southwest|jetblue|hotel|airbnb|booking\.com|expedia)\b/i, category: "travel" },
   { pattern: /\b(restaurant|cafe|coffee|starbucks|dining|grill|kitchen|olive\s+garden)\b/i, category: "dining" },
   { pattern: /\b(netflix|spotify|hulu|disney|theater|cinema|entertainment)\b/i, category: "entertainment" },
+  {
+    pattern: /\b(amazon|paypal|ebay|etsy|shopify|\.com\s+order|online\s+retail|instacart)\b/i,
+    category: "online",
+  },
 ];
 
 export function inferCategoryFromMerchant(merchant: string): string {
