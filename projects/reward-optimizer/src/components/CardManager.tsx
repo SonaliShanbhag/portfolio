@@ -3,6 +3,12 @@
 import { useState } from "react";
 import type { CardRates } from "@/lib/types";
 import type { StoredCard } from "@/lib/firestore/userData";
+import {
+  CARD_PRESETS,
+  PRESET_OTHER_ID,
+  getPresetById,
+  presetToCardRates,
+} from "@/lib/cardPresets";
 
 function parseRatesBlock(text: string): Record<string, number> {
   const o: Record<string, number> = {};
@@ -37,6 +43,19 @@ function cardFromForm(name: string, def: string, ratesText: string): CardRates {
   };
 }
 
+function applyPresetToForm(
+  preset: ReturnType<typeof getPresetById>,
+  setName: (s: string) => void,
+  setDef: (s: string) => void,
+  setRatesText: (s: string) => void,
+) {
+  if (!preset) return;
+  const cr = presetToCardRates(preset);
+  setName(cr.name);
+  setDef(String(cr.default));
+  setRatesText(serializeRates(cr));
+}
+
 type Props = {
   cards: StoredCard[];
   onSave: (card: StoredCard) => Promise<void>;
@@ -52,6 +71,10 @@ export function CardManager({ cards, onSave, onAdd, onDelete, disabled }: Props)
   const [ratesText, setRatesText] = useState("");
   const [adding, setAdding] = useState(false);
   const [busy, setBusy] = useState(false);
+  /** Add flow: which catalog template is selected, or "other", or none yet */
+  const [presetSelection, setPresetSelection] = useState<string>("");
+  /** Edit flow: optional template to refill from */
+  const [editTemplate, setEditTemplate] = useState<string>("");
 
   const openEdit = (c: StoredCard) => {
     setEditingId(c.id);
@@ -59,22 +82,62 @@ export function CardManager({ cards, onSave, onAdd, onDelete, disabled }: Props)
     setDef(String(c.default));
     setRatesText(serializeRates(c));
     setAdding(false);
+    setPresetSelection("");
+    setEditTemplate("");
   };
 
   const openAdd = () => {
     setEditingId(null);
     setName("");
     setDef("1");
-    setRatesText("groceries: 2\ntravel: 2");
+    setRatesText("");
     setAdding(true);
+    setPresetSelection("");
+    setEditTemplate("");
   };
 
   const close = () => {
     setEditingId(null);
     setAdding(false);
+    setPresetSelection("");
+    setEditTemplate("");
+  };
+
+  const onAddPresetChange = (value: string) => {
+    setPresetSelection(value);
+    if (value === "") {
+      setName("");
+      setDef("1");
+      setRatesText("");
+      return;
+    }
+    if (value === PRESET_OTHER_ID) {
+      setName("");
+      setDef("1");
+      setRatesText("");
+      return;
+    }
+    const preset = getPresetById(value);
+    applyPresetToForm(preset, setName, setDef, setRatesText);
+  };
+
+  const onEditTemplateChange = (value: string) => {
+    setEditTemplate(value);
+    if (value === "") return;
+    if (value === PRESET_OTHER_ID) {
+      setName("");
+      setDef("1");
+      setRatesText("");
+      return;
+    }
+    const preset = getPresetById(value);
+    applyPresetToForm(preset, setName, setDef, setRatesText);
   };
 
   const submit = async () => {
+    if (adding && presetSelection === "") {
+      return;
+    }
     setBusy(true);
     try {
       const built = cardFromForm(name, def, ratesText);
@@ -89,6 +152,8 @@ export function CardManager({ cards, onSave, onAdd, onDelete, disabled }: Props)
     }
   };
 
+  const showFormFields = (adding && presetSelection !== "") || editingId;
+
   return (
     <section className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6" aria-labelledby="cards-heading">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -98,8 +163,8 @@ export function CardManager({ cards, onSave, onAdd, onDelete, disabled }: Props)
             Your reward cards
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--muted)]">
-            Tell the app how each card pays you back. <strong className="font-medium text-zinc-300">Default</strong> is the rate for any category you don&apos;t list.{" "}
-            <strong className="font-medium text-zinc-300">Category lines</strong> override that for things like groceries or travel. Use whole numbers as percent (6 means 6%). Saved to your Google account.
+            Pick a <strong className="font-medium text-zinc-300">known card</strong> from the list to auto-fill typical cash-back rates (illustrative — check your issuer for real terms).{" "}
+            Choose <strong className="font-medium text-zinc-300">Other</strong> to type everything yourself. Your list is stored in the cloud when you&apos;re signed in.
           </p>
         </div>
         <button
@@ -110,6 +175,19 @@ export function CardManager({ cards, onSave, onAdd, onDelete, disabled }: Props)
         >
           Add card
         </button>
+      </div>
+
+      <div
+        className="mt-5 rounded-lg border border-sky-500/35 bg-sky-950/40 px-4 py-3 text-sm leading-relaxed text-sky-100/90"
+        role="region"
+        aria-label="About sample card data"
+      >
+        <p className="font-semibold text-sky-50">These are not your real cards from Google</p>
+        <p className="mt-2 text-sky-100/85">
+          The first time you sign in, this app copies <strong className="text-sky-50">example cards</strong> into your account so you can try things out.{" "}
+          <strong className="text-sky-50">Google sign-in does not import</strong> cards from Google Pay, Google Wallet, or your bank.{" "}
+          Use the template dropdown to load <strong className="text-sky-50">illustrative rates</strong> for common products, then adjust as needed.
+        </p>
       </div>
 
       <ul className="mt-4 space-y-2">
@@ -146,59 +224,109 @@ export function CardManager({ cards, onSave, onAdd, onDelete, disabled }: Props)
       {(adding || editingId) && (
         <div className="mt-4 space-y-4 rounded-lg border border-fuchsia-500/20 bg-black/20 p-4">
           <p className="text-sm font-medium text-white">{adding ? "Add a card" : "Edit this card"}</p>
-          <div>
-            <label htmlFor="card-name" className="mb-1 block text-xs font-medium text-zinc-400">
-              Name on the card
-            </label>
-            <input
-              id="card-name"
-              className="w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm"
-              placeholder="e.g. Sapphire, Double Cash"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              autoComplete="off"
-            />
-          </div>
-          <div>
-            <label htmlFor="card-default" className="mb-1 block text-xs font-medium text-zinc-400">
-              Default cash-back (%) for any category not listed below
-            </label>
-            <input
-              id="card-default"
-              className="w-full max-w-[12rem] rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm"
-              placeholder="e.g. 1.5"
-              value={def}
-              onChange={(e) => setDef(e.target.value)}
-              inputMode="decimal"
-            />
-          </div>
-          <div>
-            <label htmlFor="card-rates" className="mb-1 block text-xs font-medium text-zinc-400">
-              Extra rates by category (optional)
-            </label>
-            <p className="mb-2 text-xs text-[var(--muted)]">One line per category. Example: groceries gets 6%, travel gets 3%.</p>
-            <textarea
-              id="card-rates"
-              className="min-h-[100px] w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 font-mono text-sm"
-              placeholder={"groceries: 6\ntravel: 3"}
-              value={ratesText}
-              onChange={(e) => setRatesText(e.target.value)}
-            />
-          </div>
+
+          {adding && (
+            <div>
+              <label htmlFor="card-preset" className="mb-1 block text-xs font-medium text-zinc-400">
+                Card template
+              </label>
+              <select
+                id="card-preset"
+                className="w-full max-w-xl rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2.5 text-sm"
+                value={presetSelection}
+                onChange={(e) => onAddPresetChange(e.target.value)}
+              >
+                <option value="">Choose a card…</option>
+                {CARD_PRESETS.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+                <option value={PRESET_OTHER_ID}>Other — enter rates manually</option>
+              </select>
+              <p className="mt-2 text-xs text-[var(--muted)]">
+                Templates use approximate category rates for education, not live issuer APIs. You can edit every field
+                before saving.
+              </p>
+            </div>
+          )}
+
+          {editingId && (
+            <div>
+              <label htmlFor="card-edit-template" className="mb-1 block text-xs font-medium text-zinc-400">
+                Replace fields from template (optional)
+              </label>
+              <select
+                id="card-edit-template"
+                className="w-full max-w-xl rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2.5 text-sm"
+                value={editTemplate}
+                onChange={(e) => onEditTemplateChange(e.target.value)}
+              >
+                <option value="">— Keep current values —</option>
+                {CARD_PRESETS.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+                <option value={PRESET_OTHER_ID}>Clear to blank manual entry</option>
+              </select>
+            </div>
+          )}
+
+          {showFormFields && (
+            <>
+              <div>
+                <label htmlFor="card-name" className="mb-1 block text-xs font-medium text-zinc-400">
+                  Name on the card
+                </label>
+                <input
+                  id="card-name"
+                  className="w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm"
+                  placeholder="e.g. Sapphire, Double Cash"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  autoComplete="off"
+                />
+              </div>
+              <div>
+                <label htmlFor="card-default" className="mb-1 block text-xs font-medium text-zinc-400">
+                  Default cash-back (%) for any category not listed below
+                </label>
+                <input
+                  id="card-default"
+                  className="w-full max-w-[12rem] rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm"
+                  placeholder="e.g. 1.5"
+                  value={def}
+                  onChange={(e) => setDef(e.target.value)}
+                  inputMode="decimal"
+                />
+              </div>
+              <div>
+                <label htmlFor="card-rates" className="mb-1 block text-xs font-medium text-zinc-400">
+                  Extra rates by category (optional)
+                </label>
+                <p className="mb-2 text-xs text-[var(--muted)]">One line per category. Example: groceries gets 6%, travel gets 3%.</p>
+                <textarea
+                  id="card-rates"
+                  className="min-h-[100px] w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 font-mono text-sm"
+                  placeholder={"groceries: 6\ntravel: 3"}
+                  value={ratesText}
+                  onChange={(e) => setRatesText(e.target.value)}
+                />
+              </div>
+            </>
+          )}
+
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              disabled={busy || disabled}
+              disabled={busy || disabled || (adding && presetSelection === "")}
               onClick={submit}
               className="rounded-lg bg-[var(--accent-dim)] px-4 py-2 text-sm text-white hover:opacity-90 disabled:opacity-40"
             >
               Save
             </button>
-            <button
-              type="button"
-              onClick={close}
-              className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm text-zinc-300 hover:bg-white/5"
-            >
+            <button type="button" onClick={close} className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm text-zinc-300 hover:bg-white/5">
               Cancel
             </button>
           </div>
@@ -207,4 +335,3 @@ export function CardManager({ cards, onSave, onAdd, onDelete, disabled }: Props)
     </section>
   );
 }
-

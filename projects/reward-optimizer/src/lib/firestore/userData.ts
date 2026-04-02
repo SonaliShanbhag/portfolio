@@ -14,7 +14,7 @@ import {
   type Unsubscribe,
 } from "firebase/firestore";
 import type { CardRates, TransactionInput } from "@/lib/types";
-import defaultCards from "@/data/cards.json";
+import { getSeedPresets } from "@/lib/cardPresets";
 
 export type StoredTransaction = TransactionInput & { id: string };
 
@@ -99,7 +99,7 @@ export async function seedDefaultCardsIfEmpty(db: Firestore, uid: string): Promi
   const snap = await getDocs(ref);
   if (!snap.empty) return;
   const batch = writeBatch(db);
-  for (const card of defaultCards as CardRates[]) {
+  for (const card of getSeedPresets()) {
     const r = doc(ref);
     batch.set(r, cardPayload(card));
   }

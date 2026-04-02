@@ -1,7 +1,7 @@
 import type { CardRates, OptimizeResponse, TransactionInput } from "./types";
-import cardsData from "@/data/cards.json";
+import { getSeedPresets } from "./cardPresets";
 
-export const DEFAULT_CARDS: CardRates[] = cardsData as CardRates[];
+export const DEFAULT_CARDS: CardRates[] = getSeedPresets();
 
 /** Normalize user/category strings to match JSON keys (lowercase, trim, spaces → single). */
 export function normalizeCategoryKey(raw: string): string {

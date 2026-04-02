@@ -25,6 +25,7 @@ import { AuthBar } from "@/components/AuthBar";
 import { CardManager } from "@/components/CardManager";
 import { GuestCardsHint } from "@/components/GuestCardsHint";
 import { HowItWorks } from "@/components/HowItWorks";
+import { Phase3Panel } from "@/components/Phase3Panel";
 
 const emptyForm = { date: "", merchant: "", category: "groceries", amount: "" };
 const CATEGORIES = ["groceries", "travel", "dining", "gas", "entertainment", "other", "auto"];
@@ -271,7 +272,7 @@ export function OptimizerApp() {
               sample data to explore, or add your own spending. Estimates only, not financial advice.
             </p>
           </div>
-          <div className="shrink-0 lg:pt-1">{authLoading ? null : <AuthBar />}</div>
+          <div className="no-print shrink-0 lg:pt-1">{authLoading ? null : <AuthBar />}</div>
         </div>
         {syncError && (
           <p className="mt-4 text-sm text-red-400" role="alert">
@@ -280,10 +281,12 @@ export function OptimizerApp() {
         )}
       </header>
 
-      <HowItWorks />
+      <div className="no-print">
+        <HowItWorks />
+      </div>
 
       {showCardManager && (
-        <div className="mb-8">
+        <div className="no-print mb-8">
           <CardManager
             cards={remoteCards}
             onSave={handleSaveCard}
@@ -294,10 +297,14 @@ export function OptimizerApp() {
         </div>
       )}
 
-      {showGuestCardsHint && <GuestCardsHint />}
+      {showGuestCardsHint && (
+        <div className="no-print">
+          <GuestCardsHint />
+        </div>
+      )}
 
       <section className="grid gap-6 lg:grid-cols-2" aria-labelledby="spending-heading">
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6">
+        <div className="no-print rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6">
           <p className="text-xs font-medium uppercase tracking-wider text-fuchsia-400/80">Step 1</p>
           <h2 id="spending-heading" className="mt-1 text-lg font-medium text-white">
             Add your spending
@@ -525,6 +532,8 @@ export function OptimizerApp() {
           </table>
         </div>
       </section>
+
+      <Phase3Panel recommendations={recRows} totalsByCard={totals} />
 
       <footer className="mt-12 border-t border-[var(--border)] pt-8 text-center text-xs leading-relaxed text-[var(--muted)]">
         <p>

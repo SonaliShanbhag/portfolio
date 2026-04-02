@@ -1,0 +1,126 @@
+[
+  {
+    "id": "citi-double-cash",
+    "name": "Citi Double Cash",
+    "includeInSeed": true,
+    "default": 2,
+    "groceries": 2,
+    "travel": 2,
+    "dining": 2,
+    "gas": 2,
+    "entertainment": 2
+  },
+  {
+    "id": "chase-sapphire-preferred",
+    "name": "Chase Sapphire Preferred",
+    "includeInSeed": true,
+    "default": 1,
+    "travel": 3,
+    "dining": 3,
+    "groceries": 1,
+    "gas": 1.5,
+    "entertainment": 1
+  },
+  {
+    "id": "amex-blue-cash",
+    "name": "Amex Blue Cash Preferred (grocery-heavy)",
+    "includeInSeed": true,
+    "default": 1,
+    "groceries": 6,
+    "travel": 1,
+    "dining": 1,
+    "gas": 1,
+    "entertainment": 1
+  },
+  {
+    "id": "cap-one-venture",
+    "name": "Capital One Venture",
+    "includeInSeed": true,
+    "default": 2,
+    "groceries": 2,
+    "travel": 2,
+    "dining": 2,
+    "gas": 2,
+    "entertainment": 2
+  },
+  {
+    "id": "wells-active-cash",
+    "name": "Wells Fargo Active Cash",
+    "default": 2,
+    "groceries": 2,
+    "travel": 2,
+    "dining": 2,
+    "gas": 2,
+    "entertainment": 2
+  },
+  {
+    "id": "chase-freedom-flex",
+    "name": "Chase Freedom Flex (rotating 5% — modeled as 2% flat here)",
+    "default": 1,
+    "groceries": 2,
+    "travel": 2,
+    "dining": 3,
+    "gas": 2,
+    "entertainment": 2
+  },
+  {
+    "id": "amex-gold",
+    "name": "Amex Gold",
+    "default": 1,
+    "groceries": 4,
+    "dining": 4,
+    "travel": 3,
+    "gas": 1,
+    "entertainment": 1
+  },
+  {
+    "id": "discover-it",
+    "name": "Discover it (rotating 5% — modeled as 2% flat here)",
+    "default": 1,
+    "groceries": 2,
+    "travel": 2,
+    "dining": 2,
+    "gas": 2,
+    "entertainment": 2
+  },
+  {
+    "id": "usbank-cash-plus",
+    "name": "U.S. Bank Cash+",
+    "default": 1,
+    "groceries": 2,
+    "travel": 2,
+    "dining": 2,
+    "gas": 2,
+    "entertainment": 2
+  },
+  {
+    "id": "amazon-prime-visa",
+    "name": "Amazon Prime Visa",
+    "default": 1,
+    "groceries": 2,
+    "travel": 2,
+    "dining": 2,
+    "gas": 2,
+    "entertainment": 2
+  },
+  {
+    "id": "apple-card",
+    "name": "Apple Card",
+    "default": 2,
+    "groceries": 2,
+    "travel": 2,
+    "dining": 2,
+    "gas": 2,
+    "entertainment": 2
+  },
+  {
+    "id": "boa-customized-cash",
+    "name": "Bank of America Customized Cash",
+    "default": 1,
+    "groceries": 2,
+    "travel": 1,
+    "dining": 3,
+    "gas": 3,
+    "entertainment": 2
+  }
+]
