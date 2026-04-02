@@ -2,8 +2,8 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { viteDemoBase } from "../../scripts/vite-pages-base.js";
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [react()],
-  base: viteDemoBase("queue"),
+  base: viteDemoBase("queue", command),
   server: { port: 5175 },
-});
+}));

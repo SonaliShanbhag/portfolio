@@ -71,7 +71,7 @@ Asset URLs are driven by **`VITE_PAGES_BASE`** (see `scripts/vite-pages-base.js`
 
 The workflow sets `VITE_GITHUB_REPO` to `https://github.com/<owner>/<repo>` automatically so demo cards link to the correct source tree.
 
-**`VITE_PAGES_BASE` (Actions variable):** The deploy workflow sets this automatically: **`/`** for a `<owner>.github.io` user site repo, otherwise **`/<repository.name>/`** for project Pages. If you use a **custom domain at the site root** while the repo is **not** `<owner>.github.io`, GitHub still publishes under `/<repo>/` in the URL sense for asset resolution — but your domain often maps to the **root** of `dist/`. In that common case, add a repository **Actions variable** **`VITE_PAGES_BASE`** with value **`/`** so builds match `https://yourdomain.com/simulator/` instead of requesting `/portfolio/simulator/` (which 404s and shows a blank demo).
+**`VITE_PAGES_BASE` (Actions variable):** The workflow **defaults to `/`** so assets match **custom domains** and root hosting (avoids a blank site when HTML asked for `/portfolio/assets/…` but files live at `/assets/…`). If you use only **`https://<user>.github.io/<repo>/`** (no custom domain), set **`VITE_PAGES_BASE=/<repo>/`** (e.g. `/portfolio/`).
 
 Optional: add **`REWARD_OPTIMIZER_DEMO`** if you need a different URL than the default. The build passes it as `VITE_REWARD_OPTIMIZER_DEMO`. For local dev, set it in `.env` (see `.env.example`).
 

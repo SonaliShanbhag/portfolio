@@ -27,18 +27,16 @@ jobs:
         run: npm ci
       - name: Install project dependencies
         run: npm ci --prefix projects/distributed-simulator && npm ci --prefix projects/async-job-queue && npm ci --prefix projects/book-librarian && npm ci --prefix projects/mock-interview && npm ci --prefix projects/card-fit
+      # Default `/` matches custom domains and GitHub Pages “root” hosting. If you use only
+      # https://<user>.github.io/<repo>/ (no custom domain), set Actions variable VITE_PAGES_BASE=/<repo>/
       - name: Set VITE_PAGES_BASE for GitHub Pages
         env:
           OVERRIDE: ${{ vars.VITE_PAGES_BASE }}
         run: |
-          REPO_NAME="${{ github.event.repository.name }}"
-          OWNER="${{ github.repository_owner }}"
           if [ -n "$OVERRIDE" ]; then
             BASE="$OVERRIDE"
-          elif [ "$REPO_NAME" = "$OWNER.github.io" ]; then
-            BASE="/"
           else
-            BASE="/$REPO_NAME/"
+            BASE="/"
           fi
           echo "VITE_PAGES_BASE=$BASE" >> "$GITHUB_ENV"
           echo "Using VITE_PAGES_BASE=$BASE"
