@@ -23,6 +23,8 @@ import type { CardRates, OptimizeResponse, TransactionInput } from "@/lib/types"
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthBar } from "@/components/AuthBar";
 import { CardManager } from "@/components/CardManager";
+import { GuestCardsHint } from "@/components/GuestCardsHint";
+import { HowItWorks } from "@/components/HowItWorks";
 
 const emptyForm = { date: "", merchant: "", category: "groceries", amount: "" };
 const CATEGORIES = ["groceries", "travel", "dining", "gas", "entertainment", "other", "auto"];
@@ -253,29 +255,32 @@ export function OptimizerApp() {
   const totals = useMemo(() => result?.totalsByCard ?? {}, [result]);
 
   const showCardManager = Boolean(user && db && firebaseReady);
+  const showGuestCardsHint = Boolean(firebaseReady && !user && !authLoading);
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-      <header className="mb-8 border-b border-[var(--border)] pb-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+      <header className="mb-6 border-b border-[var(--border)] pb-8">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <p className="text-sm font-medium text-[var(--accent)]">Card Fit add-on</p>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
               Credit Card Reward Optimizer
             </h1>
-            <p className="mt-3 max-w-2xl text-[var(--muted)]">
-              Upload a CSV or add transactions. The server picks the highest reward per row (amount × rate).
-              Sign in with Google to save transactions and custom cards in Firestore.
+            <p className="mt-3 max-w-2xl text-base leading-relaxed text-[var(--muted)]">
+              See which card pays you the most for each purchase you enter. Works in the browser — no bank linking. Use
+              sample data to explore, or add your own spending. Estimates only, not financial advice.
             </p>
           </div>
-          <div className="shrink-0">{authLoading ? null : <AuthBar />}</div>
+          <div className="shrink-0 lg:pt-1">{authLoading ? null : <AuthBar />}</div>
         </div>
         {syncError && (
           <p className="mt-4 text-sm text-red-400" role="alert">
-            Sync: {syncError}
+            {syncError}
           </p>
         )}
       </header>
+
+      <HowItWorks />
 
       {showCardManager && (
         <div className="mb-8">
@@ -289,92 +294,142 @@ export function OptimizerApp() {
         </div>
       )}
 
-      <section className="grid gap-6 lg:grid-cols-2">
+      {showGuestCardsHint && <GuestCardsHint />}
+
+      <section className="grid gap-6 lg:grid-cols-2" aria-labelledby="spending-heading">
         <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6">
-          <h2 className="text-lg font-medium text-white">Data</h2>
-          <p className="mt-1 text-sm text-[var(--muted)]">
-            CSV: <code className="text-[var(--accent)]">date, merchant, amount</code> — category optional; use{" "}
-            <code className="text-[var(--accent)]">auto</code> or leave blank to infer from merchant.
+          <p className="text-xs font-medium uppercase tracking-wider text-fuchsia-400/80">Step 1</p>
+          <h2 id="spending-heading" className="mt-1 text-lg font-medium text-white">
+            Add your spending
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-[var(--muted)]">
+            Each row is one purchase. You can load a file from a spreadsheet app, try our sample list, or fill the form
+            below. For files, include at least <strong className="text-zinc-400">date</strong>,{" "}
+            <strong className="text-zinc-400">merchant</strong>, and <strong className="text-zinc-400">amount</strong>.
+            Category is optional — leave it blank or choose &quot;auto&quot; and we&apos;ll guess from the store name.
           </p>
-          <div className="mt-4 flex flex-wrap gap-3">
-            <label className="cursor-pointer rounded-lg bg-[var(--accent-dim)] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90">
-              Upload CSV
-              <input type="file" accept=".csv,text/csv" className="hidden" onChange={onFile} />
+          <div className="mt-5 flex flex-wrap gap-3">
+            <label className="cursor-pointer rounded-lg bg-[var(--accent-dim)] px-4 py-2.5 text-sm font-medium text-white transition hover:opacity-90">
+              Choose a CSV file
+              <input type="file" accept=".csv,text/csv" className="sr-only" onChange={onFile} aria-label="Upload CSV file with transactions" />
             </label>
             <button
               type="button"
               onClick={loadSample}
-              className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm text-[var(--foreground)] hover:bg-white/5"
+              className="rounded-lg border border-[var(--border)] px-4 py-2.5 text-sm text-[var(--foreground)] hover:bg-white/5"
             >
-              Load sample CSV
+              Try sample data
             </button>
             <button
               type="button"
               onClick={clearAll}
-              className="rounded-lg px-4 py-2 text-sm text-[var(--muted)] hover:text-white"
+              className="rounded-lg px-4 py-2.5 text-sm text-[var(--muted)] hover:text-white"
             >
-              Clear all
+              Clear list
             </button>
           </div>
 
-          <form onSubmit={addManual} className="mt-6 space-y-3">
-            <p className="text-sm font-medium text-white">Add one transaction</p>
+          <form onSubmit={addManual} className="mt-8 space-y-4 border-t border-[var(--border)] pt-6">
+            <h3 className="text-sm font-medium text-white">Or add a single purchase</h3>
             <div className="grid gap-3 sm:grid-cols-2">
-              <input
-                className="rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm"
-                placeholder="Date (e.g. 2025-03-01)"
-                value={form.date}
-                onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
-              />
-              <input
-                className="rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm"
-                placeholder="Merchant"
-                value={form.merchant}
-                onChange={(e) => setForm((f) => ({ ...f, merchant: e.target.value }))}
-              />
-              <select
-                className="rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm"
-                value={form.category}
-                onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
-              >
-                {CATEGORIES.map((c) => (
-                  <option key={c} value={c}>
-                    {c === "auto" ? "auto (infer)" : c}
-                  </option>
-                ))}
-              </select>
-              <input
-                className="rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm"
-                placeholder="Amount"
-                inputMode="decimal"
-                value={form.amount}
-                onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
-              />
+              <div>
+                <label htmlFor="tx-date" className="mb-1 block text-xs font-medium text-zinc-400">
+                  Date
+                </label>
+                <input
+                  id="tx-date"
+                  className="w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm"
+                  placeholder="e.g. 2025-03-01"
+                  value={form.date}
+                  onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
+                  autoComplete="off"
+                />
+              </div>
+              <div>
+                <label htmlFor="tx-merchant" className="mb-1 block text-xs font-medium text-zinc-400">
+                  Store or merchant
+                </label>
+                <input
+                  id="tx-merchant"
+                  className="w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm"
+                  placeholder="e.g. Whole Foods"
+                  value={form.merchant}
+                  onChange={(e) => setForm((f) => ({ ...f, merchant: e.target.value }))}
+                  autoComplete="off"
+                />
+              </div>
+              <div>
+                <label htmlFor="tx-category" className="mb-1 block text-xs font-medium text-zinc-400">
+                  Category
+                </label>
+                <select
+                  id="tx-category"
+                  className="w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm"
+                  value={form.category}
+                  onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+                >
+                  {CATEGORIES.map((c) => (
+                    <option key={c} value={c}>
+                      {c === "auto" ? "Guess from store name" : c}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label htmlFor="tx-amount" className="mb-1 block text-xs font-medium text-zinc-400">
+                  Amount ($)
+                </label>
+                <input
+                  id="tx-amount"
+                  className="w-full rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2 text-sm"
+                  placeholder="0.00"
+                  inputMode="decimal"
+                  value={form.amount}
+                  onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
+                />
+              </div>
             </div>
             <button
               type="submit"
-              className="rounded-lg bg-[var(--accent-dim)] px-4 py-2 text-sm font-medium text-white hover:opacity-90"
+              className="rounded-lg bg-[var(--accent-dim)] px-4 py-2.5 text-sm font-medium text-white hover:opacity-90"
             >
-              Add &amp; optimize
+              Add purchase &amp; update results
             </button>
           </form>
         </div>
 
         <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6">
-          <h2 className="text-lg font-medium text-white">Summary</h2>
-          {loading && <p className="mt-3 text-sm text-[var(--muted)]">Running optimizer…</p>}
-          {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
+          <p className="text-xs font-medium uppercase tracking-wider text-fuchsia-400/80">Step 2</p>
+          <h2 id="summary-heading" className="mt-1 text-lg font-medium text-white">
+            Rewards by card
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-[var(--muted)]">
+            If you used the <strong className="text-zinc-400">suggested card</strong> for every row below, here&apos;s
+            about how much cash-back you&apos;d earn per card (before fees). Updates when your list changes.
+          </p>
+          {loading && (
+            <p className="mt-4 text-sm text-[var(--muted)]" aria-live="polite">
+              Comparing your cards…
+            </p>
+          )}
+          {error && (
+            <p className="mt-4 text-sm text-red-400" role="alert">
+              {error}
+            </p>
+          )}
           {!loading && !error && Object.keys(totals).length === 0 && (
-            <p className="mt-3 text-sm text-[var(--muted)]">Add transactions to see total rewards per card.</p>
+            <p className="mt-4 rounded-lg border border-dashed border-[var(--border)] px-4 py-6 text-center text-sm text-[var(--muted)]">
+              Nothing to total yet. Add a purchase or load the sample list.
+            </p>
           )}
           {Object.keys(totals).length > 0 && (
-            <ul className="mt-4 space-y-2">
+            <ul className="mt-4 space-y-2" aria-labelledby="summary-heading">
               {Object.entries(totals)
                 .sort((a, b) => b[1] - a[1])
                 .map(([card, dollars]) => (
                   <li
                     key={card}
-                    className="flex items-center justify-between rounded-lg border border-[var(--border)] px-3 py-2 text-sm"
+                    className="flex items-center justify-between rounded-lg border border-[var(--border)] px-3 py-2.5 text-sm"
                   >
                     <span className="text-white">{card}</span>
                     <span className="font-mono text-[var(--accent)]">${dollars.toFixed(2)}</span>
@@ -385,56 +440,98 @@ export function OptimizerApp() {
         </div>
       </section>
 
-      <section className="mt-10 overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--surface)]">
-        <table className="min-w-full text-left text-sm">
-          <thead>
-            <tr className="border-b border-[var(--border)] text-[var(--muted)]">
-              <th className="px-4 py-3 font-medium">Date</th>
-              <th className="px-4 py-3 font-medium">Merchant</th>
-              <th className="px-4 py-3 font-medium">Category</th>
-              <th className="px-4 py-3 font-medium text-right">Amount</th>
-              <th className="px-4 py-3 font-medium">Best card</th>
-              <th className="px-4 py-3 font-medium text-right">Rate %</th>
-              <th className="px-4 py-3 font-medium text-right">Reward</th>
-              <th className="px-4 py-3 font-medium w-24"> </th>
-            </tr>
-          </thead>
-          <tbody>
-            {recRows.length === 0 && (
-              <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-[var(--muted)]">
-                  No rows yet. Upload a CSV or add a transaction.
-                </td>
+      <section
+        className="mt-10 overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--surface)] p-2 sm:p-0"
+        aria-labelledby="table-heading"
+      >
+        <div className="px-4 pb-2 pt-4 sm:px-6">
+          <p className="text-xs font-medium uppercase tracking-wider text-fuchsia-400/80">Step 3</p>
+          <h2 id="table-heading" className="mt-1 text-lg font-medium text-white">
+            Row-by-row results
+          </h2>
+          <p className="mt-2 max-w-3xl text-sm text-[var(--muted)]">
+            For each purchase: which card wins, the rate used, and estimated dollars earned on that row. Use{" "}
+            <span className="text-zinc-400">Remove</span> to drop a row from your list.
+          </p>
+        </div>
+        <div className="overflow-x-auto px-2 pb-4 sm:px-0 sm:pb-0">
+          <table className="min-w-[720px] w-full text-left text-sm">
+            <caption className="sr-only">
+              Recommended card and reward for each transaction you entered
+            </caption>
+            <thead>
+              <tr className="border-b border-[var(--border)] text-[var(--muted)]">
+                <th scope="col" className="px-4 py-3 font-medium">
+                  Date
+                </th>
+                <th scope="col" className="px-4 py-3 font-medium">
+                  Merchant
+                </th>
+                <th scope="col" className="px-4 py-3 font-medium" title="Spending type used for reward rates">
+                  Category
+                </th>
+                <th scope="col" className="px-4 py-3 text-right font-medium">
+                  Purchase
+                </th>
+                <th scope="col" className="px-4 py-3 font-medium" title="Card that earns the most on this row">
+                  Suggested card
+                </th>
+                <th
+                  scope="col"
+                  className="px-4 py-3 text-right font-medium"
+                  title="Reward rate applied for this category"
+                >
+                  Rate
+                </th>
+                <th scope="col" className="px-4 py-3 text-right font-medium" title="Estimated cash-back on this row">
+                  Earned
+                </th>
+                <th scope="col" className="w-20 px-4 py-3 font-medium">
+                  <span className="sr-only">Remove row</span>
+                </th>
               </tr>
-            )}
-            {recRows.map((r, i) => (
-              <tr key={`${r.date}-${r.merchant}-${i}`} className="border-b border-[var(--border)]/60">
-                <td className="px-4 py-3 text-[var(--foreground)]">{r.date}</td>
-                <td className="px-4 py-3 text-white">{r.merchant}</td>
-                <td className="px-4 py-3 capitalize text-[var(--muted)]">{r.category}</td>
-                <td className="px-4 py-3 text-right font-mono">${r.amount.toFixed(2)}</td>
-                <td className="px-4 py-3 text-[var(--accent)]">{r.bestCard}</td>
-                <td className="px-4 py-3 text-right font-mono text-[var(--muted)]">{r.ratePercent}%</td>
-                <td className="px-4 py-3 text-right font-mono text-white">${r.rewardDollars.toFixed(2)}</td>
-                <td className="px-4 py-3">
-                  {(user ? remoteTx.length : localTx.length) > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => deleteRow(i)}
-                      className="text-xs text-red-400/90 hover:text-red-300"
-                    >
-                      Remove
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {recRows.length === 0 && (
+                <tr>
+                  <td colSpan={8} className="px-4 py-10 text-center text-[var(--muted)]">
+                    Your results will show up here after you add at least one purchase in Step 1.
+                  </td>
+                </tr>
+              )}
+              {recRows.map((r, i) => (
+                <tr key={`${r.date}-${r.merchant}-${i}`} className="border-b border-[var(--border)]/60">
+                  <td className="px-4 py-3 text-[var(--foreground)]">{r.date}</td>
+                  <td className="px-4 py-3 text-white">{r.merchant}</td>
+                  <td className="px-4 py-3 capitalize text-[var(--muted)]">{r.category}</td>
+                  <td className="px-4 py-3 text-right font-mono">${r.amount.toFixed(2)}</td>
+                  <td className="px-4 py-3 text-[var(--accent)]">{r.bestCard}</td>
+                  <td className="px-4 py-3 text-right font-mono text-[var(--muted)]">{r.ratePercent}%</td>
+                  <td className="px-4 py-3 text-right font-mono text-white">${r.rewardDollars.toFixed(2)}</td>
+                  <td className="px-4 py-3">
+                    {(user ? remoteTx.length : localTx.length) > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => deleteRow(i)}
+                        className="text-xs text-red-400/90 underline-offset-2 hover:text-red-300 hover:underline"
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </section>
 
-      <footer className="mt-12 text-center text-xs text-[var(--muted)]">
-        Phase 2: Firebase Auth + Firestore. Rates are illustrative. Plaid integration is not included yet.
+      <footer className="mt-12 border-t border-[var(--border)] pt-8 text-center text-xs leading-relaxed text-[var(--muted)]">
+        <p>
+          Educational estimates only. Pair with{" "}
+          <span className="text-zinc-500">Card Fit</span> for fuller spending analysis. Optional Google sign-in saves your
+          list in the cloud when Firebase is configured.
+        </p>
       </footer>
     </div>
   );
