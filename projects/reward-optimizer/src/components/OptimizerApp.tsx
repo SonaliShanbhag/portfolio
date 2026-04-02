@@ -21,6 +21,7 @@ import {
   type StoredCard,
   type StoredTransaction,
 } from "@/lib/firestore/userData";
+import { getSeedPresets } from "@/lib/cardPresets";
 import type { CardRates, OptimizeResponse, TransactionInput } from "@/lib/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthBar } from "@/components/AuthBar";
@@ -64,6 +65,7 @@ export function OptimizerApp() {
   const db = typeof window !== "undefined" ? getFirestoreDb() : null;
 
   const [localTx, setLocalTx] = useState<TransactionInput[]>([]);
+  const [localCards, setLocalCards] = useState<StoredCard[]>([]);
   const [remoteTx, setRemoteTx] = useState<StoredTransaction[]>([]);
   const [remoteCards, setRemoteCards] = useState<StoredCard[]>([]);
   const [result, setResult] = useState<OptimizeResponse | null>(null);
@@ -132,9 +134,19 @@ export function OptimizerApp() {
     };
   }, [user, db]);
 
+  /** Guest wallet is in-memory only; clear when signing in so Firestore is the source of truth. */
+  useEffect(() => {
+    if (user) setLocalCards([]);
+  }, [user]);
+
   useEffect(() => {
     const rows = transactionsForOptimize;
     if (user && remoteCards.length === 0) {
+      setResult(null);
+      setLoading(false);
+      return;
+    }
+    if (!user && localCards.length === 0) {
       setResult(null);
       setLoading(false);
       return;
@@ -154,6 +166,8 @@ export function OptimizerApp() {
         const body: { transactions: TransactionInput[]; cards?: CardRates[] } = { transactions: rows };
         if (user && remoteCards.length > 0) {
           body.cards = remoteCards.map(toCardRates);
+        } else if (!user && localCards.length > 0) {
+          body.cards = localCards.map(toCardRates);
         }
         const res = await fetch("/api/optimize", {
           method: "POST",
@@ -182,7 +196,7 @@ export function OptimizerApp() {
     return () => {
       cancelled = true;
     };
-  }, [user, transactionsForOptimize, remoteCards]);
+  }, [user, transactionsForOptimize, remoteCards, localCards]);
 
   const [form, setForm] = useState(emptyForm);
 
@@ -388,37 +402,66 @@ export function OptimizerApp() {
   };
 
   const handleSaveCard = async (card: StoredCard) => {
-    if (!user || !db) return;
-    await setCardDoc(db, user.uid, card);
+    if (user && db) {
+      await setCardDoc(db, user.uid, card);
+    } else {
+      setLocalCards((prev) => prev.map((c) => (c.id === card.id ? card : c)));
+    }
   };
 
   const handleAddCard = async (card: CardRates) => {
-    if (!user || !db) return;
-    await addCardDoc(db, user.uid, card);
+    if (user && db) {
+      await addCardDoc(db, user.uid, card);
+    } else {
+      const id =
+        typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `local-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      setLocalCards((prev) => [...prev, { ...card, id }]);
+    }
   };
 
   const handleDeleteCard = async (id: string) => {
-    if (!user || !db) return;
-    await deleteCardDoc(db, user.uid, id);
+    if (user && db) {
+      await deleteCardDoc(db, user.uid, id);
+    } else {
+      setLocalCards((prev) => prev.filter((c) => c.id !== id));
+    }
   };
 
   const handleDeleteAllCards = async () => {
-    if (!user || !db) return;
-    await deleteAllCardsRemote(db, user.uid);
+    if (user && db) {
+      await deleteAllCardsRemote(db, user.uid);
+    } else {
+      setLocalCards([]);
+    }
   };
 
   const handleRestoreExampleCards = async () => {
-    if (!user || !db) return;
-    await seedPresetCardsIntoEmptyWallet(db, user.uid);
+    if (user && db) {
+      await seedPresetCardsIntoEmptyWallet(db, user.uid);
+    } else {
+      setLocalCards(
+        getSeedPresets().map((c) => ({
+          ...c,
+          id:
+            typeof crypto !== "undefined" && crypto.randomUUID
+              ? crypto.randomUUID()
+              : `local-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        })),
+      );
+    }
   };
 
   const recRows = result?.recommendations ?? [];
   const totals = useMemo(() => result?.totalsByCard ?? {}, [result]);
 
-  const showCardManager = Boolean(user && db && firebaseReady);
+  const walletCards = user ? remoteCards : localCards;
+  /** Guests use local cards only — no Firestore; show wallet as soon as auth state is known. */
+  const showCardManager = Boolean(!authLoading && (user ? Boolean(db) && firebaseReady : true));
   const showGuestCardsHint = Boolean(firebaseReady && !user && !authLoading);
-  /** Signed-in users need at least one wallet card before Steps 1–3 apply; guests use built-in defaults. */
-  const walletReady = !user || remoteCards.length > 0;
+  /** At least one reward card (local or synced) before Steps 1–3 apply. */
+  const walletReady = walletCards.length > 0;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
@@ -450,13 +493,12 @@ export function OptimizerApp() {
       {showCardManager && (
         <div className="no-print mb-8">
           <CardManager
-            cards={remoteCards}
+            cards={walletCards}
             onSave={handleSaveCard}
             onAdd={handleAddCard}
             onDelete={handleDeleteCard}
             onDeleteAll={handleDeleteAllCards}
             onRestoreExamples={handleRestoreExampleCards}
-            disabled={!user}
           />
         </div>
       )}
@@ -478,7 +520,8 @@ export function OptimizerApp() {
               <p className="text-sm font-semibold text-amber-100/95">Add reward cards first</p>
               <p className="mt-2 text-xs leading-relaxed text-zinc-400">
                 Use <strong className="text-zinc-300">Add card</strong> in Your wallet above to pick a template or enter
-                rates manually. Spending and results stay disabled until at least one card is in your wallet.
+                rates manually. Spending and results stay disabled until at least one card is listed there (guest: this
+                browser session only; sign in to sync).
               </p>
             </div>
           </div>

@@ -13,8 +13,11 @@ export function GuestCardsHint() {
         Custom cards &amp; saved history
       </h2>
       <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--muted)]">
-        Right now you&apos;re using the app <strong className="text-zinc-300">without an account</strong>. We still compare purchases using built-in <strong className="text-zinc-400">sample cards</strong> (not from your bank).{" "}
-        <strong className="text-zinc-300">Sign in with Google</strong> above to save your work: you&apos;ll get the same kind of starter list, which you then <strong className="text-zinc-400">edit or replace by hand</strong> — nothing is pulled from Google Pay or Wallet.
+        You&apos;re using the app <strong className="text-zinc-300">without an account</strong>. Add reward cards in{" "}
+        <strong className="text-zinc-400">Your wallet</strong> below (templates or manual rates — not from your bank). Cards
+        stay in this browser until you leave or refresh.{" "}
+        <strong className="text-zinc-300">Sign in with Google</strong> above to sync your wallet and spending to the cloud;
+        nothing is pulled from Google Pay or banks.
       </p>
     </section>
   );
