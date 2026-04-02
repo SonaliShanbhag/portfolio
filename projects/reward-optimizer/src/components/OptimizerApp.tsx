@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getFirestoreDb } from "@/lib/firebase/client";
 import { applyCategoryRules } from "@/lib/categorize";
 import { parseTransactionsCsv } from "@/lib/csv";
@@ -74,6 +74,9 @@ export function OptimizerApp() {
   } | null>(null);
   const [statementBusy, setStatementBusy] = useState(false);
   const [pdfConfirmBusy, setPdfConfirmBusy] = useState(false);
+  const [step3TableOpen, setStep3TableOpen] = useState(true);
+  const statementPdfReviewRef = useRef<HTMLDivElement>(null);
+  const step2RewardsRef = useRef<HTMLDivElement>(null);
 
   const transactionsForOptimize: TransactionInput[] = useMemo(() => {
     if (user) {
@@ -176,7 +179,18 @@ export function OptimizerApp() {
 
   const [form, setForm] = useState(emptyForm);
 
-  const processRows = useCallback((rows: TransactionInput[]) => applyCategoryRules(rows), []);
+  const processRows = useCallback((rows: TransactionInput[]) => {
+    const nonZero = rows.filter((r) => Number.isFinite(r.amount) && Math.abs(r.amount) > 0);
+    return applyCategoryRules(nonZero);
+  }, []);
+
+  useEffect(() => {
+    if (pdfReview) {
+      requestAnimationFrame(() => {
+        statementPdfReviewRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      });
+    }
+  }, [pdfReview]);
 
   const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -216,12 +230,21 @@ export function OptimizerApp() {
       const text = await file.text();
       let rows = parseTransactionsCsv(text);
       rows = processRows(rows);
+      if (rows.length === 0) {
+        setError("No transactions with a non-zero amount. Check your CSV.");
+        setResult(null);
+        e.target.value = "";
+        return;
+      }
       if (user && db) {
         await replaceAllTransactions(db, user.uid, rows);
       } else {
         setLocalTx(rows);
       }
       setError(null);
+      requestAnimationFrame(() => {
+        step2RewardsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not parse CSV");
       setResult(null);
@@ -273,6 +296,9 @@ export function OptimizerApp() {
         setLocalTx(txs);
       }
       setPdfReview(null);
+      requestAnimationFrame(() => {
+        step2RewardsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save transactions");
     } finally {
@@ -290,12 +316,19 @@ export function OptimizerApp() {
       const text = await res.text();
       let rows = parseTransactionsCsv(text);
       rows = processRows(rows);
+      if (rows.length === 0) {
+        setError("Sample had no non-zero rows.");
+        return;
+      }
       if (user && db) {
         await replaceAllTransactions(db, user.uid, rows);
       } else {
         setLocalTx(rows);
       }
       setError(null);
+      requestAnimationFrame(() => {
+        step2RewardsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
     } catch {
       setError("Could not load sample CSV");
     }
@@ -306,6 +339,10 @@ export function OptimizerApp() {
     const amount = Number.parseFloat(form.amount);
     if (!form.date.trim() || !form.merchant.trim() || Number.isNaN(amount)) {
       setError("Fill date, merchant, and a numeric amount.");
+      return;
+    }
+    if (amount <= 0) {
+      setError("Enter an amount greater than zero.");
       return;
     }
     const row = applyCategoryRules([
@@ -409,20 +446,6 @@ export function OptimizerApp() {
         </div>
       )}
 
-      {pdfReview && (
-        <div className="no-print mb-8">
-          <StatementPdfReview
-            review={pdfReview}
-            busy={statementBusy || pdfConfirmBusy}
-            onUpdateRow={updatePdfRow}
-            onDeleteRow={deletePdfRow}
-            onAddRow={addPdfRow}
-            onConfirm={confirmPdfRows}
-            onCancel={cancelPdfReview}
-          />
-        </div>
-      )}
-
       <section className="grid gap-6 lg:grid-cols-2" aria-labelledby="spending-heading">
         <div className="no-print rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6">
           <p className="text-xs font-medium uppercase tracking-wider text-fuchsia-400/80">Step 1</p>
@@ -474,6 +497,20 @@ export function OptimizerApp() {
               Clear list
             </button>
           </div>
+
+          {pdfReview && (
+            <div id="statement-pdf-review" ref={statementPdfReviewRef} className="no-print mt-6 scroll-mt-28">
+              <StatementPdfReview
+                review={pdfReview}
+                busy={statementBusy || pdfConfirmBusy}
+                onUpdateRow={updatePdfRow}
+                onDeleteRow={deletePdfRow}
+                onAddRow={addPdfRow}
+                onConfirm={confirmPdfRows}
+                onCancel={cancelPdfReview}
+              />
+            </div>
+          )}
 
           <form onSubmit={addManual} className="mt-8 space-y-4 border-t border-[var(--border)] pt-6">
             <h3 className="text-sm font-medium text-white">Or add a single purchase</h3>
@@ -544,7 +581,11 @@ export function OptimizerApp() {
           </form>
         </div>
 
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6">
+        <div
+          id="step-2-rewards"
+          ref={step2RewardsRef}
+          className="scroll-mt-24 rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6"
+        >
           <p className="text-xs font-medium uppercase tracking-wider text-fuchsia-400/80">Step 2</p>
           <h2 id="summary-heading" className="mt-1 text-lg font-medium text-white">
             Rewards by card
@@ -590,17 +631,32 @@ export function OptimizerApp() {
         className="mt-10 overflow-x-auto rounded-xl border border-[var(--border)] bg-[var(--surface)] p-2 sm:p-0"
         aria-labelledby="table-heading"
       >
-        <div className="px-4 pb-2 pt-4 sm:px-6">
-          <p className="text-xs font-medium uppercase tracking-wider text-fuchsia-400/80">Step 3</p>
-          <h2 id="table-heading" className="mt-1 text-lg font-medium text-white">
-            Row-by-row results
-          </h2>
-          <p className="mt-2 max-w-3xl text-sm text-[var(--muted)]">
-            For each purchase: which card wins, the rate used, and estimated dollars earned on that row. Use{" "}
-            <span className="text-zinc-400">Remove</span> to drop a row from your list.
-          </p>
+        <div className="flex flex-col gap-2 px-4 pb-2 pt-4 sm:flex-row sm:items-start sm:justify-between sm:px-6">
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-medium uppercase tracking-wider text-fuchsia-400/80">Step 3</p>
+            <h2 id="table-heading" className="mt-1 text-lg font-medium text-white">
+              Row-by-row results
+            </h2>
+            <p className="mt-2 max-w-3xl text-sm text-[var(--muted)]">
+              For each purchase: which card wins, the rate used, and estimated dollars earned on that row. Use{" "}
+              <span className="text-zinc-400">Remove</span> to drop a row from your list.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setStep3TableOpen((o) => !o)}
+            className="no-print shrink-0 rounded-lg border border-[var(--border)] px-3 py-2 text-xs font-medium text-zinc-300 hover:bg-white/5"
+            aria-expanded={step3TableOpen}
+            aria-controls="step-3-table-panel"
+          >
+            {step3TableOpen ? "Hide table" : "Show table"}
+          </button>
         </div>
-        <div className="overflow-x-auto px-2 pb-4 sm:px-0 sm:pb-0">
+        <div
+          id="step-3-table-panel"
+          className={`overflow-x-auto px-2 pb-4 sm:px-0 sm:pb-0 ${step3TableOpen ? "" : "hidden"}`}
+          aria-hidden={!step3TableOpen}
+        >
           <table className="min-w-[720px] w-full text-left text-sm">
             <caption className="sr-only">
               Recommended card and reward for each transaction you entered
@@ -672,7 +728,9 @@ export function OptimizerApp() {
         </div>
       </section>
 
-      <Phase3Panel recommendations={recRows} totalsByCard={totals} />
+      <div className="scroll-mt-8">
+        <Phase3Panel recommendations={recRows} totalsByCard={totals} />
+      </div>
 
       <footer className="mt-12 border-t border-[var(--border)] pt-8 text-center text-xs leading-relaxed text-[var(--muted)]">
         <p>

@@ -11,7 +11,7 @@ export function statementRowsToTransactions(rows: StatementPdfRow[]): Transactio
     const n = parseFloat(rawAmt.replace(/[()]/g, ""));
     if (Number.isNaN(n)) continue;
     const amount = Math.abs(n);
-    if (amount === 0 && !merchant) continue;
+    if (amount === 0) continue;
     out.push({
       date: date || new Date().toISOString().slice(0, 10),
       merchant: merchant || "Unknown",

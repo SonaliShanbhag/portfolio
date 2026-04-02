@@ -6,6 +6,8 @@ import type { StoredCard } from "@/lib/firestore/userData";
 import { CardPresetPicker } from "@/components/CardPresetPicker";
 import { PRESET_OTHER_ID, getPresetById, presetToCardRates } from "@/lib/cardPresets";
 
+type AddCardPhase = "pick" | "edit";
+
 function parseRatesBlock(text: string): Record<string, number> {
   const o: Record<string, number> = {};
   for (const line of text.split("\n")) {
@@ -72,6 +74,8 @@ export function CardManager({ cards, onSave, onAdd, onDelete, disabled }: Props)
   /** Edit flow: optional template to refill from */
   const [editTemplate, setEditTemplate] = useState<string>("");
   const [addPickerKey, setAddPickerKey] = useState(0);
+  /** After a template is chosen, hide the big picker so the form is the focus. */
+  const [addCardPhase, setAddCardPhase] = useState<AddCardPhase>("pick");
 
   const openEdit = (c: StoredCard) => {
     setEditingId(c.id);
@@ -81,6 +85,7 @@ export function CardManager({ cards, onSave, onAdd, onDelete, disabled }: Props)
     setAdding(false);
     setPresetSelection("");
     setEditTemplate("");
+    setAddCardPhase("pick");
   };
 
   const openAdd = () => {
@@ -91,6 +96,7 @@ export function CardManager({ cards, onSave, onAdd, onDelete, disabled }: Props)
     setAdding(true);
     setPresetSelection("");
     setEditTemplate("");
+    setAddCardPhase("pick");
     setAddPickerKey((k) => k + 1);
   };
 
@@ -99,10 +105,12 @@ export function CardManager({ cards, onSave, onAdd, onDelete, disabled }: Props)
     setAdding(false);
     setPresetSelection("");
     setEditTemplate("");
+    setAddCardPhase("pick");
   };
 
   const onAddPresetPick = (value: string) => {
     setPresetSelection(value);
+    setAddCardPhase("edit");
     if (value === PRESET_OTHER_ID) {
       setName("");
       setDef("1");
@@ -127,7 +135,7 @@ export function CardManager({ cards, onSave, onAdd, onDelete, disabled }: Props)
   };
 
   const submit = async () => {
-    if (adding && presetSelection === "") {
+    if (adding && (presetSelection === "" || addCardPhase === "pick")) {
       return;
     }
     setBusy(true);
@@ -144,7 +152,7 @@ export function CardManager({ cards, onSave, onAdd, onDelete, disabled }: Props)
     }
   };
 
-  const showFormFields = (adding && presetSelection !== "") || editingId;
+  const showFormFields = (adding && addCardPhase === "edit") || Boolean(editingId);
 
   return (
     <section className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6" aria-labelledby="cards-heading">
@@ -217,7 +225,7 @@ export function CardManager({ cards, onSave, onAdd, onDelete, disabled }: Props)
         <div className="mt-4 space-y-4 rounded-lg border border-fuchsia-500/20 bg-black/20 p-4">
           <p className="text-sm font-medium text-white">{adding ? "Add a card" : "Edit this card"}</p>
 
-          {adding && (
+          {adding && addCardPhase === "pick" && (
             <div>
               <p className="mb-2 text-xs font-medium text-zinc-400">Card template</p>
               <CardPresetPicker
@@ -230,6 +238,33 @@ export function CardManager({ cards, onSave, onAdd, onDelete, disabled }: Props)
                 Templates use approximate category rates for education, not live issuer APIs. Travel and airline cards
                 use point multipliers as comparable percentages. You can edit every field before saving.
               </p>
+            </div>
+          )}
+
+          {adding && addCardPhase === "edit" && (
+            <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-[var(--border)] bg-[var(--background)]/80 px-3 py-2.5">
+              <p className="text-sm text-zinc-200">
+                {presetSelection === PRESET_OTHER_ID ? (
+                  <>
+                    <span className="text-[var(--muted)]">Entry mode:</span> manual rates
+                  </>
+                ) : (
+                  <>
+                    <span className="text-[var(--muted)]">Template:</span> {getPresetById(presetSelection)?.name ?? "—"}
+                  </>
+                )}
+              </p>
+              <button
+                type="button"
+                className="shrink-0 text-xs font-medium text-fuchsia-300 hover:text-fuchsia-200"
+                onClick={() => {
+                  setPresetSelection("");
+                  setAddCardPhase("pick");
+                  setAddPickerKey((k) => k + 1);
+                }}
+              >
+                Change template
+              </button>
             </div>
           )}
 
@@ -296,7 +331,7 @@ export function CardManager({ cards, onSave, onAdd, onDelete, disabled }: Props)
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              disabled={busy || disabled || (adding && presetSelection === "")}
+              disabled={busy || disabled || (adding && (presetSelection === "" || addCardPhase === "pick"))}
               onClick={submit}
               className="rounded-lg bg-[var(--accent-dim)] px-4 py-2 text-sm text-white hover:opacity-90 disabled:opacity-40"
             >
