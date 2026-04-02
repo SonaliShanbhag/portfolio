@@ -1,6 +1,6 @@
 import type { TransactionInput } from "./types";
 
-const REQUIRED = ["date", "merchant", "category", "amount"] as const;
+const REQUIRED = ["date", "merchant", "amount"] as const;
 
 function parseCsvLine(line: string): string[] {
   const out: string[] = [];
@@ -43,23 +43,30 @@ export function parseTransactionsCsv(text: string): TransactionInput[] {
     col(name);
   }
 
+  const hasCategory = headers.includes("category");
   const d = col("date");
   const m = col("merchant");
-  const c = col("category");
   const a = col("amount");
+  const cIdx = hasCategory ? col("category") : -1;
 
   const rows: TransactionInput[] = [];
   for (let i = 1; i < lines.length; i++) {
     const cells = parseCsvLine(lines[i]);
-    if (cells.length < 4) continue;
+    const minCells = hasCategory ? 4 : 3;
+    if (cells.length < minCells) continue;
     const amount = Number.parseFloat(String(cells[a]).replace(/[$,]/g, ""));
     if (Number.isNaN(amount)) {
       throw new Error(`Invalid amount on row ${i + 1}: ${cells[a]}`);
     }
+    let category = "auto";
+    if (hasCategory && cIdx >= 0) {
+      const raw = cells[cIdx]?.trim() ?? "";
+      category = raw === "" ? "auto" : raw;
+    }
     rows.push({
       date: cells[d],
       merchant: cells[m],
-      category: cells[c],
+      category,
       amount,
     });
   }
