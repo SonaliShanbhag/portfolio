@@ -59,10 +59,14 @@ type Props = {
   onSave: (card: StoredCard) => Promise<void>;
   onAdd: (card: CardRates) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
+  /** Remove every card (signed-in). */
+  onDeleteAll?: () => Promise<void>;
+  /** Re-add starter cards when the wallet is empty. */
+  onRestoreExamples?: () => Promise<void>;
   disabled?: boolean;
 };
 
-export function CardManager({ cards, onSave, onAdd, onDelete, disabled }: Props) {
+export function CardManager({ cards, onSave, onAdd, onDelete, onDeleteAll, onRestoreExamples, disabled }: Props) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [def, setDef] = useState("1");
@@ -76,6 +80,8 @@ export function CardManager({ cards, onSave, onAdd, onDelete, disabled }: Props)
   const [addPickerKey, setAddPickerKey] = useState(0);
   /** After a template is chosen, hide the big picker so the form is the focus. */
   const [addCardPhase, setAddCardPhase] = useState<AddCardPhase>("pick");
+  const [deleteAllBusy, setDeleteAllBusy] = useState(false);
+  const [restoreBusy, setRestoreBusy] = useState(false);
 
   const openEdit = (c: StoredCard) => {
     setEditingId(c.id);
@@ -154,6 +160,33 @@ export function CardManager({ cards, onSave, onAdd, onDelete, disabled }: Props)
 
   const showFormFields = (adding && addCardPhase === "edit") || Boolean(editingId);
 
+  const handleDeleteAll = async () => {
+    if (!onDeleteAll || cards.length === 0) return;
+    if (
+      !window.confirm(
+        `Remove all ${cards.length} card${cards.length === 1 ? "" : "s"} from your wallet? You can add cards again anytime.`,
+      )
+    ) {
+      return;
+    }
+    setDeleteAllBusy(true);
+    try {
+      await onDeleteAll();
+    } finally {
+      setDeleteAllBusy(false);
+    }
+  };
+
+  const handleRestoreExamples = async () => {
+    if (!onRestoreExamples) return;
+    setRestoreBusy(true);
+    try {
+      await onRestoreExamples();
+    } finally {
+      setRestoreBusy(false);
+    }
+  };
+
   return (
     <section className="rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6" aria-labelledby="cards-heading">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -167,14 +200,26 @@ export function CardManager({ cards, onSave, onAdd, onDelete, disabled }: Props)
             Choose <strong className="font-medium text-zinc-300">Other</strong> to type everything yourself. Your list is stored in the cloud when you&apos;re signed in.
           </p>
         </div>
-        <button
-          type="button"
-          disabled={disabled}
-          onClick={openAdd}
-          className="rounded-lg bg-[var(--accent-dim)] px-3 py-1.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-40"
-        >
-          Add card
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          {onDeleteAll && cards.length > 0 && (
+            <button
+              type="button"
+              disabled={disabled || deleteAllBusy}
+              onClick={handleDeleteAll}
+              className="rounded-lg border border-red-500/40 px-3 py-1.5 text-sm font-medium text-red-300/90 hover:bg-red-950/40 disabled:opacity-40"
+            >
+              {deleteAllBusy ? "Removing…" : "Delete all cards"}
+            </button>
+          )}
+          <button
+            type="button"
+            disabled={disabled}
+            onClick={openAdd}
+            className="rounded-lg bg-[var(--accent-dim)] px-3 py-1.5 text-sm font-medium text-white hover:opacity-90 disabled:opacity-40"
+          >
+            Add card
+          </button>
+        </div>
       </div>
 
       <div
@@ -189,6 +234,22 @@ export function CardManager({ cards, onSave, onAdd, onDelete, disabled }: Props)
           Use the template dropdown to load <strong className="text-sky-50">illustrative rates</strong> for common products, then adjust as needed.
         </p>
       </div>
+
+      {cards.length === 0 && (
+        <div className="mt-4 rounded-lg border border-dashed border-[var(--border)] px-4 py-8 text-center">
+          <p className="text-sm text-[var(--muted)]">No cards yet. Add one to compare rewards on your spending below.</p>
+          {onRestoreExamples && (
+            <button
+              type="button"
+              disabled={disabled || restoreBusy}
+              onClick={handleRestoreExamples}
+              className="mt-4 rounded-lg border border-[var(--border)] px-3 py-2 text-xs font-medium text-zinc-300 hover:bg-white/5 disabled:opacity-40"
+            >
+              {restoreBusy ? "Loading…" : "Restore example cards"}
+            </button>
+          )}
+        </div>
+      )}
 
       <ul className="mt-4 space-y-2">
         {cards.map((c) => (
@@ -210,7 +271,7 @@ export function CardManager({ cards, onSave, onAdd, onDelete, disabled }: Props)
               </button>
               <button
                 type="button"
-                disabled={disabled || cards.length <= 1}
+                disabled={disabled}
                 onClick={() => onDelete(c.id)}
                 className="text-red-400/90 hover:text-red-300 disabled:opacity-40"
               >

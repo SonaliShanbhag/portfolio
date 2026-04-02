@@ -9,10 +9,12 @@ import {
   addTransactionRemote,
   cardPayload,
   clearTransactionsRemote,
+  deleteAllCardsRemote,
   deleteCardDoc,
   deleteTransactionRemote,
   replaceAllTransactions,
   seedDefaultCardsIfEmpty,
+  seedPresetCardsIntoEmptyWallet,
   setCardDoc,
   subscribeCards,
   subscribeTransactions,
@@ -132,6 +134,11 @@ export function OptimizerApp() {
 
   useEffect(() => {
     const rows = transactionsForOptimize;
+    if (user && remoteCards.length === 0) {
+      setResult(null);
+      setLoading(false);
+      return;
+    }
     if (rows.length === 0) {
       setResult(null);
       setLoading(false);
@@ -395,11 +402,23 @@ export function OptimizerApp() {
     await deleteCardDoc(db, user.uid, id);
   };
 
+  const handleDeleteAllCards = async () => {
+    if (!user || !db) return;
+    await deleteAllCardsRemote(db, user.uid);
+  };
+
+  const handleRestoreExampleCards = async () => {
+    if (!user || !db) return;
+    await seedPresetCardsIntoEmptyWallet(db, user.uid);
+  };
+
   const recRows = result?.recommendations ?? [];
   const totals = useMemo(() => result?.totalsByCard ?? {}, [result]);
 
   const showCardManager = Boolean(user && db && firebaseReady);
   const showGuestCardsHint = Boolean(firebaseReady && !user && !authLoading);
+  /** Signed-in users need at least one wallet card before Steps 1–3 apply; guests use built-in defaults. */
+  const walletReady = !user || remoteCards.length > 0;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
@@ -435,6 +454,8 @@ export function OptimizerApp() {
             onSave={handleSaveCard}
             onAdd={handleAddCard}
             onDelete={handleDeleteCard}
+            onDeleteAll={handleDeleteAllCards}
+            onRestoreExamples={handleRestoreExampleCards}
             disabled={!user}
           />
         </div>
@@ -446,6 +467,26 @@ export function OptimizerApp() {
         </div>
       )}
 
+      <div className="relative">
+        {!walletReady && (
+          <div
+            className="pointer-events-auto absolute inset-0 z-10 flex items-start justify-center rounded-xl bg-zinc-950/55 pt-12 backdrop-blur-[2px] sm:pt-16"
+            role="region"
+            aria-label="Add cards to continue"
+          >
+            <div className="mx-4 max-w-md rounded-xl border border-amber-500/35 bg-zinc-900/95 px-5 py-4 text-center shadow-lg">
+              <p className="text-sm font-semibold text-amber-100/95">Add reward cards first</p>
+              <p className="mt-2 text-xs leading-relaxed text-zinc-400">
+                Use <strong className="text-zinc-300">Add card</strong> in Your wallet above to pick a template or enter
+                rates manually. Spending and results stay disabled until at least one card is in your wallet.
+              </p>
+            </div>
+          </div>
+        )}
+        <div
+          className={walletReady ? "" : "pointer-events-none select-none opacity-[0.38]"}
+          aria-hidden={!walletReady}
+        >
       <section className="grid gap-6 lg:grid-cols-2" aria-labelledby="spending-heading">
         <div className="no-print rounded-xl border border-[var(--border)] bg-[var(--surface)] p-6">
           <p className="text-xs font-medium uppercase tracking-wider text-fuchsia-400/80">Step 1</p>
@@ -730,6 +771,8 @@ export function OptimizerApp() {
 
       <div className="scroll-mt-8">
         <Phase3Panel recommendations={recRows} totalsByCard={totals} />
+      </div>
+        </div>
       </div>
 
       <footer className="mt-12 border-t border-[var(--border)] pt-8 text-center text-xs leading-relaxed text-[var(--muted)]">

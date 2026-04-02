@@ -3,6 +3,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   getDocs,
   onSnapshot,
   orderBy,
@@ -26,6 +27,10 @@ function cardsCol(db: Firestore, uid: string) {
 
 function txCol(db: Firestore, uid: string) {
   return collection(db, "users", uid, "transactions");
+}
+
+function walletSettingsDoc(db: Firestore, uid: string) {
+  return doc(db, "users", uid, "settings", "wallet");
 }
 
 export function cardPayload(card: CardRates): Record<string, string | number> {
@@ -98,11 +103,39 @@ export async function seedDefaultCardsIfEmpty(db: Firestore, uid: string): Promi
   const ref = cardsCol(db, uid);
   const snap = await getDocs(ref);
   if (!snap.empty) return;
+  const settingsSnap = await getDoc(walletSettingsDoc(db, uid));
+  if (settingsSnap.exists() && settingsSnap.data()?.autoSeedDisabled === true) {
+    return;
+  }
   const batch = writeBatch(db);
   for (const card of getSeedPresets()) {
     const r = doc(ref);
     batch.set(r, cardPayload(card));
   }
+  await batch.commit();
+}
+
+/** Remove every card doc and remember not to auto-seed starter cards again on refresh. */
+export async function deleteAllCardsRemote(db: Firestore, uid: string): Promise<void> {
+  const ref = cardsCol(db, uid);
+  const snap = await getDocs(ref);
+  if (snap.empty) return;
+  const batch = writeBatch(db);
+  snap.forEach((d) => batch.delete(d.ref));
+  batch.set(walletSettingsDoc(db, uid), { autoSeedDisabled: true }, { merge: true });
+  await batch.commit();
+}
+
+/** Add seed presets when the wallet is empty (e.g. after delete-all). Clears auto-seed opt-out. */
+export async function seedPresetCardsIntoEmptyWallet(db: Firestore, uid: string): Promise<void> {
+  const ref = cardsCol(db, uid);
+  const snap = await getDocs(ref);
+  if (!snap.empty) return;
+  const batch = writeBatch(db);
+  for (const card of getSeedPresets()) {
+    batch.set(doc(ref), cardPayload(card));
+  }
+  batch.set(walletSettingsDoc(db, uid), { autoSeedDisabled: false }, { merge: true });
   await batch.commit();
 }
 
