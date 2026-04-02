@@ -1,3 +1,4 @@
+import { categoryFromMccString } from "@/lib/mccCategories";
 import { normalizeCategoryKey } from "@/lib/optimize";
 
 /** Canonical reward categories used by the optimizer and card presets. */
@@ -13,54 +14,153 @@ const CANONICAL = new Set([
   "other",
 ]);
 
+/** Plaid / Finicity / YNAB / major-bank style primary categories → app category. */
+const BANK_PRIMARY: Record<string, string> = {
+  food_and_drink: "dining",
+  food_and_beverages: "dining",
+  restaurants: "dining",
+  fast_food: "dining",
+  coffee_shop: "dining",
+  alcohol: "dining",
+  bar: "dining",
+  groceries: "groceries",
+  supermarket: "groceries",
+  gas: "gas",
+  gas_station: "gas",
+  fuel: "gas",
+  entertainment: "entertainment",
+  recreation: "entertainment",
+  general_merchandise: "online",
+  shopping_net: "online",
+  shopping_pos: "online",
+  digital_purchase: "online",
+  electronics: "online",
+  clothing: "online",
+  home_improvement: "online",
+  sporting_goods: "online",
+  airlines: "airline",
+  airfare: "airline",
+  lodging: "hotel",
+  hotels: "hotel",
+  car_rental: "travel",
+  taxi: "travel",
+  public_transportation: "travel",
+  parking: "travel",
+  tolls: "travel",
+  subscription: "entertainment",
+  subscriptions: "entertainment",
+  personal_care: "online",
+  pharmacy: "groceries",
+  medical: "other",
+  healthcare: "other",
+  insurance: "other",
+  utilities: "other",
+  rent: "other",
+  housing: "other",
+  home: "other",
+  bills: "other",
+  government: "other",
+  education: "other",
+  pets: "other",
+  charity: "other",
+  donation: "other",
+  income: "other",
+  transfer: "other",
+  transfer_in: "other",
+  transfer_out: "other",
+  loan_payments: "other",
+  bank_fees: "other",
+  services: "other",
+  professional_services: "other",
+  auto: "other",
+  auto_repair: "other",
+  auto_parts: "other",
+};
+
 /**
  * Map bank-export labels (e.g. Plaid-style category + subcategory) to our taxonomy.
  */
 export function mapBankCategoryToAppCategory(category: string, subcategory: string): string | null {
-  const c = category.trim().toLowerCase();
-  const s = subcategory.trim().toLowerCase();
+  const c = category.trim().toLowerCase().replace(/\s+/g, "_");
+  const s = subcategory.trim().toLowerCase().replace(/\s+/g, "_");
 
   if (!c && !s) return null;
 
   if (!c && s) {
-    if (/\b(coffee|fast\s*food|delivery|food)\b/i.test(s)) return "dining";
-    if (/\b(streaming|subscription)\b/i.test(s)) return "entertainment";
+    if (/\b(coffee|fast\s*food|delivery|food|meal|restaurant)\b/i.test(s)) return "dining";
+    if (/\b(streaming|subscription|movie|music)\b/i.test(s)) return "entertainment";
     if (/\b(gas\s*station|fuel)\b/i.test(s)) return "gas";
-    if (/\b(airfare|flight)\b/i.test(s)) return "airline";
+    if (/\b(airfare|flight|airline)\b/i.test(s)) return "airline";
     if (/\b(hotel|lodging)\b/i.test(s)) return "hotel";
     if (/\b(grocery|supermarket|wholesale|convenience)\b/i.test(s)) return "groceries";
-    if (/\b(online\s*retail|electronics|general\s*retail)\b/i.test(s)) return "online";
-    if (/\b(rideshare)\b/i.test(s)) return "travel";
+    if (/\b(online\s*retail|electronics|general\s*retail|clothing)\b/i.test(s)) return "online";
+    if (/\b(rideshare|taxi|transit|parking)\b/i.test(s)) return "travel";
+    if (/\b(pharmacy|drug)\b/i.test(s)) return "groceries";
     return null;
   }
 
   if (c === "travel") {
-    if (s.includes("air") || s.includes("airfare")) return "airline";
+    if (s.includes("air") || s.includes("airfare") || s.includes("airline")) return "airline";
     if (s.includes("hotel") || s.includes("lodging")) return "hotel";
+    if (s.includes("car") || s.includes("rental")) return "travel";
     return "travel";
   }
+
+  if (c === "shopping") {
+    if (s.includes("grocery") || s.includes("supermarket")) return "groceries";
+    if (s.includes("pharmacy") || s.includes("drug")) return "groceries";
+    return "online";
+  }
+
+  if (c === "transport" || c === "transportation") {
+    if (s.includes("rideshare") || s.includes("taxi") || s.includes("ride") || s.includes("uber") || s.includes("lyft"))
+      return "travel";
+    if (s.includes("gas") || s.includes("fuel")) return "gas";
+    if (s.includes("parking") || s.includes("toll")) return "travel";
+    if (s.includes("transit") || s.includes("public")) return "travel";
+    return "travel";
+  }
+
+  const primary = BANK_PRIMARY[c];
+  if (primary) return primary;
 
   if (c === "dining" || c === "food" || c === "restaurants" || c === "food_and_drink") return "dining";
   if (c === "gas" || c === "gasoline" || c === "fuel") return "gas";
   if (c === "groceries" || c === "grocery") return "groceries";
   if (c === "entertainment") return "entertainment";
 
-  if (c === "shopping") {
-    if (s.includes("grocery") || s.includes("supermarket")) return "groceries";
-    return "online";
-  }
-
-  if (c === "transport" || c === "transportation") {
-    if (s.includes("rideshare") || s.includes("taxi") || s.includes("ride")) return "travel";
-    if (s.includes("gas") || s.includes("fuel")) return "gas";
-    return "travel";
-  }
-
   if (c === "housing" || c === "home" || c === "rent") return "other";
   if (c === "insurance") return "other";
   if (c === "health" || c === "medical") return "other";
   if (c === "bills" || c === "utilities") return "other";
 
+  const fuzzy = mapBankCategoryFuzzy(category, subcategory);
+  if (fuzzy) return fuzzy;
+
+  return null;
+}
+
+/** Last-resort substring match on combined bank labels (handles unknown bank taxonomies). */
+function mapBankCategoryFuzzy(category: string, subcategory: string): string | null {
+  const hay = `${category} ${subcategory}`.toLowerCase();
+  if (/\b(food|restaurant|dining|coffee|fast\s*food|bar|alcohol|meal|takeout)\b/i.test(hay)) return "dining";
+  if (/\b(airline|flight|air\s*travel|airfare)\b/i.test(hay)) return "airline";
+  if (/\b(hotel|lodg|lodging|motel)\b/i.test(hay)) return "hotel";
+  if (/\b(grocery|supermarket|wholesale\s*club)\b/i.test(hay)) return "groceries";
+  if (/\b(\bgas\b|fuel|gasoline)\b/i.test(hay)) return "gas";
+  if (/\b(stream|subscription|entertainment|movie|music|video\s*game)\b/i.test(hay)) return "entertainment";
+  if (/\b(rideshare|uber|lyft|taxi|transit|commuter|ferry|train\s*ticket)\b/i.test(hay)) return "travel";
+  if (/\b(shop|retail|merchandise|online|e-?commerce|digital|department\s*store)\b/i.test(hay)) return "online";
+  if (/\b(parking|toll|road\s*fee)\b/i.test(hay)) return "travel";
+  if (/\b(pharmacy|drugstore|drug\s*store)\b/i.test(hay)) return "groceries";
+  if (/\b(utilities|electric|water\s*bill|internet|phone\s*bill)\b/i.test(hay)) return "other";
+  if (/\b(insurance|medical|health|doctor|dent|hospital|clinic)\b/i.test(hay)) return "other";
+  if (/\b(rent|mortgage|housing|landlord)\b/i.test(hay)) return "other";
+  if (/\b(pet|veterinary|vet\b)\b/i.test(hay)) return "other";
+  if (/\b(education|tuition|school|university|college)\b/i.test(hay)) return "other";
+  if (/\b(government|tax|irs)\b/i.test(hay)) return "other";
+  if (/\b(charity|donation|nonprofit)\b/i.test(hay)) return "other";
+  if (/\b(gym|fitness|yoga|pilates)\b/i.test(hay)) return "other";
   return null;
 }
 
@@ -71,32 +171,9 @@ function tryPassThroughCanonicalLabel(raw: string): string | null {
   return null;
 }
 
-/**
- * Map ISO/Visa-style 4-digit MCC to a reward category.
- * @see https://www.visa.com/content/dam/VCOM/download/merchants/visa-merchant-data-standards-manual.pdf (summary tables)
- */
+/** Map ISO/Visa-style 4-digit MCC to a reward category (see `mccCategories.ts`). */
 export function categoryFromMcc(raw: string): string | null {
-  const d = raw.replace(/\D/g, "").padStart(4, "0").slice(-4);
-  if (d.length !== 4) return null;
-  const n = parseInt(d, 10);
-  if (Number.isNaN(n)) return null;
-
-  if (n === 4511) return "airline";
-  if (n === 7011 || n === 7012) return "hotel";
-  if (n === 4121) return "travel";
-  if (n >= 5541 && n <= 5542) return "gas";
-  if (n >= 5811 && n <= 5814) return "dining";
-  if (n === 5300 || n === 5411 || n === 5412 || n === 5422 || n === 5499) return "groceries";
-  if (n === 5310 || n === 5311 || n === 5331 || n === 5399) return "online";
-  if (n === 5732 || n === 5734 || n === 5735 || n === 5942 || n === 5999) return "online";
-  if (n === 4899) return "entertainment";
-  if (n === 6513) return "other";
-  if (n === 6300) return "other";
-  if (n === 7997) return "other";
-  if (n >= 5200 && n <= 5261) return "online";
-  if (n === 4722) return "travel";
-
-  return null;
+  return categoryFromMccString(raw);
 }
 
 /**
