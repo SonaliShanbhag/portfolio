@@ -144,16 +144,19 @@ export function OptimizerApp() {
     if (user && remoteCards.length === 0) {
       setResult(null);
       setLoading(false);
+      setError(null);
       return;
     }
     if (!user && localCards.length === 0) {
       setResult(null);
       setLoading(false);
+      setError(null);
       return;
     }
     if (rows.length === 0) {
       setResult(null);
       setLoading(false);
+      setError(null);
       return;
     }
 

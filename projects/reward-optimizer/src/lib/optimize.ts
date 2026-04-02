@@ -33,7 +33,8 @@ export function bestCardForTransaction(
   const categoryKey = normalizeCategoryKey(tx.category);
   let best: CardRates | null = null;
   let bestRate = -Infinity;
-  let bestReward = 0;
+  /** Start at -∞ so negative-amount rows (credits / payments) still pick a best card instead of failing the compare to 0. */
+  let bestReward = -Infinity;
 
   for (const card of cards) {
     const rate = rateForCard(card, categoryKey);
