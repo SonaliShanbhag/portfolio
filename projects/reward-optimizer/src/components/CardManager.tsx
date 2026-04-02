@@ -3,12 +3,8 @@
 import { useState } from "react";
 import type { CardRates } from "@/lib/types";
 import type { StoredCard } from "@/lib/firestore/userData";
-import {
-  CARD_PRESETS,
-  PRESET_OTHER_ID,
-  getPresetById,
-  presetToCardRates,
-} from "@/lib/cardPresets";
+import { CardPresetPicker } from "@/components/CardPresetPicker";
+import { PRESET_OTHER_ID, getPresetById, presetToCardRates } from "@/lib/cardPresets";
 
 function parseRatesBlock(text: string): Record<string, number> {
   const o: Record<string, number> = {};
@@ -75,6 +71,7 @@ export function CardManager({ cards, onSave, onAdd, onDelete, disabled }: Props)
   const [presetSelection, setPresetSelection] = useState<string>("");
   /** Edit flow: optional template to refill from */
   const [editTemplate, setEditTemplate] = useState<string>("");
+  const [addPickerKey, setAddPickerKey] = useState(0);
 
   const openEdit = (c: StoredCard) => {
     setEditingId(c.id);
@@ -94,6 +91,7 @@ export function CardManager({ cards, onSave, onAdd, onDelete, disabled }: Props)
     setAdding(true);
     setPresetSelection("");
     setEditTemplate("");
+    setAddPickerKey((k) => k + 1);
   };
 
   const close = () => {
@@ -103,14 +101,8 @@ export function CardManager({ cards, onSave, onAdd, onDelete, disabled }: Props)
     setEditTemplate("");
   };
 
-  const onAddPresetChange = (value: string) => {
+  const onAddPresetPick = (value: string) => {
     setPresetSelection(value);
-    if (value === "") {
-      setName("");
-      setDef("1");
-      setRatesText("");
-      return;
-    }
     if (value === PRESET_OTHER_ID) {
       setName("");
       setDef("1");
@@ -121,7 +113,7 @@ export function CardManager({ cards, onSave, onAdd, onDelete, disabled }: Props)
     applyPresetToForm(preset, setName, setDef, setRatesText);
   };
 
-  const onEditTemplateChange = (value: string) => {
+  const onEditTemplatePick = (value: string) => {
     setEditTemplate(value);
     if (value === "") return;
     if (value === PRESET_OTHER_ID) {
@@ -227,49 +219,33 @@ export function CardManager({ cards, onSave, onAdd, onDelete, disabled }: Props)
 
           {adding && (
             <div>
-              <label htmlFor="card-preset" className="mb-1 block text-xs font-medium text-zinc-400">
-                Card template
-              </label>
-              <select
-                id="card-preset"
-                className="w-full max-w-xl rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2.5 text-sm"
+              <p className="mb-2 text-xs font-medium text-zinc-400">Card template</p>
+              <CardPresetPicker
+                key={addPickerKey}
+                id="card-preset-search"
                 value={presetSelection}
-                onChange={(e) => onAddPresetChange(e.target.value)}
-              >
-                <option value="">Choose a card…</option>
-                {CARD_PRESETS.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-                <option value={PRESET_OTHER_ID}>Other — enter rates manually</option>
-              </select>
-              <p className="mt-2 text-xs text-[var(--muted)]">
-                Templates use approximate category rates for education, not live issuer APIs. You can edit every field
-                before saving.
+                onChange={onAddPresetPick}
+              />
+              <p className="mt-3 text-xs text-[var(--muted)]">
+                Templates use approximate category rates for education, not live issuer APIs. Travel and airline cards
+                use point multipliers as comparable percentages. You can edit every field before saving.
               </p>
             </div>
           )}
 
           {editingId && (
             <div>
-              <label htmlFor="card-edit-template" className="mb-1 block text-xs font-medium text-zinc-400">
-                Replace fields from template (optional)
-              </label>
-              <select
-                id="card-edit-template"
-                className="w-full max-w-xl rounded-lg border border-[var(--border)] bg-[var(--background)] px-3 py-2.5 text-sm"
+              <p className="mb-2 text-xs font-medium text-zinc-400">Replace fields from template (optional)</p>
+              <CardPresetPicker
+                id="card-edit-template-search"
                 value={editTemplate}
-                onChange={(e) => onEditTemplateChange(e.target.value)}
-              >
-                <option value="">— Keep current values —</option>
-                {CARD_PRESETS.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-                <option value={PRESET_OTHER_ID}>Clear to blank manual entry</option>
-              </select>
+                onChange={onEditTemplatePick}
+                allowEmpty
+                emptyLabel="— Keep current values —"
+              />
+              <p className="mt-2 text-xs text-[var(--muted)]">
+                Choosing <span className="text-zinc-400">Other</span> clears the form to a blank manual entry.
+              </p>
             </div>
           )}
 

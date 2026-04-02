@@ -1,6 +1,5 @@
 import type { TransactionInput } from "./types";
-
-const REQUIRED = ["date", "merchant", "amount"] as const;
+import { resolveTransactionCategory } from "./categoryResolve";
 
 function parseCsvLine(line: string): string[] {
   const out: string[] = [];
@@ -21,6 +20,26 @@ function parseCsvLine(line: string): string[] {
   return out;
 }
 
+function normalizeHeader(h: string): string {
+  return h
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "_");
+}
+
+function findColumn(headers: string[], aliases: string[]): number {
+  for (const a of aliases) {
+    const i = headers.indexOf(a);
+    if (i >= 0) return i;
+  }
+  return -1;
+}
+
+/**
+ * Parse transaction CSV with flexible columns.
+ * Required: date, amount, and merchant (or merchant_name / payee).
+ * Optional: category, subcategory, mcc_code, raw_description — used for stronger categorization.
+ */
 export function parseTransactionsCsv(text: string): TransactionInput[] {
   const lines = text
     .split(/\r?\n/)
@@ -30,45 +49,66 @@ export function parseTransactionsCsv(text: string): TransactionInput[] {
     throw new Error("CSV needs a header row and at least one data row.");
   }
 
-  const headers = parseCsvLine(lines[0]).map((h) => h.trim().toLowerCase());
-  const col = (name: string) => {
-    const i = headers.indexOf(name);
-    if (i < 0) {
-      throw new Error(`Missing column "${name}". Found: ${headers.join(", ")}`);
-    }
-    return i;
-  };
+  const headers = parseCsvLine(lines[0]).map(normalizeHeader);
 
-  for (const name of REQUIRED) {
-    col(name);
+  const d = findColumn(headers, ["date", "transaction_date", "posted_date", "post_date"]);
+  const m = findColumn(headers, ["merchant", "merchant_name", "payee", "description", "name"]);
+  const a = findColumn(headers, ["amount", "amt"]);
+  if (d < 0 || m < 0 || a < 0) {
+    throw new Error(
+      `CSV must include date, merchant (or merchant_name), and amount columns. Found: ${headers.join(", ")}`,
+    );
   }
 
-  const hasCategory = headers.includes("category");
-  const d = col("date");
-  const m = col("merchant");
-  const a = col("amount");
-  const cIdx = hasCategory ? col("category") : -1;
+  const cIdx = findColumn(headers, ["category", "expense_category"]);
+  const subIdx = findColumn(headers, ["subcategory", "sub_category", "category_detail"]);
+  const mccIdx = findColumn(headers, ["mcc_code", "mcc", "merchant_category_code"]);
+  const rawIdx = findColumn(headers, ["raw_description", "memo", "original_description", "details", "note"]);
 
   const rows: TransactionInput[] = [];
   for (let i = 1; i < lines.length; i++) {
     const cells = parseCsvLine(lines[i]);
-    const minCells = hasCategory ? 4 : 3;
-    if (cells.length < minCells) continue;
-    const amount = Number.parseFloat(String(cells[a]).replace(/[$,]/g, ""));
+    if (cells.length < 3) continue;
+
+    const amount = Number.parseFloat(String(cells[a] ?? "").replace(/[$,]/g, ""));
     if (Number.isNaN(amount)) {
       throw new Error(`Invalid amount on row ${i + 1}: ${cells[a]}`);
     }
-    let category = "auto";
-    if (hasCategory && cIdx >= 0) {
-      const raw = cells[cIdx]?.trim() ?? "";
-      category = raw === "" ? "auto" : raw;
+
+    const merchant = String(cells[m] ?? "").trim();
+    const rawDescription = rawIdx >= 0 ? String(cells[rawIdx] ?? "").trim() : "";
+    const mccRaw = mccIdx >= 0 ? String(cells[mccIdx] ?? "").trim() : "";
+
+    let bankCategory: string | undefined;
+    let bankSubcategory: string | undefined;
+    if (cIdx >= 0) {
+      const raw = String(cells[cIdx] ?? "").trim();
+      if (raw && raw.toLowerCase() !== "auto") bankCategory = raw;
     }
+    if (subIdx >= 0) {
+      const raw = String(cells[subIdx] ?? "").trim();
+      if (raw && raw.toLowerCase() !== "auto") bankSubcategory = raw;
+    }
+
+    const category = resolveTransactionCategory({
+      merchant,
+      rawDescription: rawDescription || undefined,
+      mcc: mccRaw || undefined,
+      bankCategory,
+      bankSubcategory,
+    });
+
     rows.push({
-      date: cells[d],
-      merchant: cells[m],
+      date: String(cells[d] ?? "").trim(),
+      merchant: merchant || "Unknown",
       category,
       amount,
     });
   }
+
+  if (rows.length === 0) {
+    throw new Error("No valid data rows in CSV.");
+  }
+
   return rows;
 }

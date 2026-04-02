@@ -1,0 +1,6 @@
+transaction_id,date,amount,merchant_name,raw_description,mcc_code,category,subcategory
+100001,2026-01-01,-23.45,STARBUCKS,STARBUCKS STORE 1123,5814,Dining,Coffee
+100002,2026-01-01,-76.12,SHELL,SHELL OIL 445566,5541,Gas,Gas Station
+100003,2026-01-01,-154.89,AMAZON,AMZN Mktp US*X1Y2Z3,5942,Shopping,Online Retail
+100004,2026-01-01,-9.99,NETFLIX,NETFLIX.COM,4899,Entertainment,Streaming
+100005,2026-01-02,-45.00,UBER,UBER TRIP ID 99887,4121,Transport,Rideshare

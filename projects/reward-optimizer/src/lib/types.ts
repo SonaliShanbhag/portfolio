@@ -11,6 +11,9 @@ export type TransactionInput = {
   merchant: string;
   category: string;
   amount: number;
+  /** Optional: used when re-inferring category (e.g. future CSV round-trips). */
+  rawDescription?: string;
+  mcc?: string;
 };
 
 export type Recommendation = {

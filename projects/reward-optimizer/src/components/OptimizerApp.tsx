@@ -31,7 +31,18 @@ import { statementRowsToTransactions } from "@/lib/pdfImport";
 import type { StatementPdfRow } from "@/lib/statementParse";
 
 const emptyForm = { date: "", merchant: "", category: "groceries", amount: "" };
-const CATEGORIES = ["groceries", "travel", "dining", "gas", "entertainment", "online", "other", "auto"];
+const CATEGORIES = [
+  "groceries",
+  "travel",
+  "dining",
+  "gas",
+  "entertainment",
+  "online",
+  "airline",
+  "hotel",
+  "other",
+  "auto",
+];
 
 function toTransactionInput(tx: StoredTransaction): TransactionInput {
   return {
@@ -421,9 +432,13 @@ export function OptimizerApp() {
           <p className="mt-2 text-sm leading-relaxed text-[var(--muted)]">
             Each row is one purchase. Load a CSV from your bank or spreadsheet, a credit card statement PDF (parsed in your
             browser — like Card Fit — layouts vary; CSV exports are usually more reliable), try our sample list, or fill
-            the form below. For files, include at least <strong className="text-zinc-400">date</strong>,{" "}
-            <strong className="text-zinc-400">merchant</strong>, and <strong className="text-zinc-400">amount</strong>.
-            Category is optional — leave it blank or choose &quot;auto&quot; and we&apos;ll guess from the store name.
+            the form below. CSVs need <strong className="text-zinc-400">date</strong>,{" "}
+            <strong className="text-zinc-400">amount</strong>, and a merchant column (
+            <strong className="text-zinc-400">merchant</strong> or <strong className="text-zinc-400">merchant_name</strong>
+            ). If your export includes <strong className="text-zinc-400">mcc_code</strong>,{" "}
+            <strong className="text-zinc-400">category</strong>/<strong className="text-zinc-400">subcategory</strong>, or{" "}
+            <strong className="text-zinc-400">raw_description</strong>, we use them for better categorization. Otherwise
+            choose &quot;auto&quot; or leave category blank and we infer from text.
           </p>
           {statementBusy && (
             <p className="mt-3 text-xs text-sky-400/90" aria-live="polite">

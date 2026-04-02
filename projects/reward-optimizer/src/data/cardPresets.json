@@ -2,153 +2,949 @@
   {
     "id": "chase-freedom-unlimited",
     "name": "Chase Freedom Unlimited",
-    "includeInSeed": true,
+    "issuer": "Chase",
+    "cardType": "Cashback",
     "default": 1.5,
     "dining": 3,
-    "travel": 5
+    "travel": 5,
+    "includeInSeed": true
   },
   {
     "id": "chase-freedom-flex",
-    "name": "Chase Freedom Flex (5% rotating quarters not modeled)",
-    "includeInSeed": true,
+    "name": "Chase Freedom Flex (5% rotating not modeled)",
+    "issuer": "Chase",
+    "cardType": "Cashback",
     "default": 1,
     "dining": 3,
-    "travel": 5
+    "travel": 5,
+    "includeInSeed": true
   },
   {
     "id": "citi-double-cash",
     "name": "Citi Double Cash",
-    "includeInSeed": true,
-    "default": 2
+    "issuer": "Citi",
+    "cardType": "Cashback",
+    "default": 2,
+    "includeInSeed": true
   },
   {
     "id": "citi-custom-cash",
-    "name": "Citi Custom Cash (5% on top monthly category — modeled as groceries)",
-    "includeInSeed": false,
+    "name": "Citi Custom Cash (5% top category — modeled as groceries)",
+    "issuer": "Citi",
+    "cardType": "Cashback",
     "default": 1,
-    "groceries": 5
+    "groceries": 5,
+    "includeInSeed": false
   },
   {
     "id": "capital-one-quicksilver",
     "name": "Capital One Quicksilver",
-    "includeInSeed": false,
+    "issuer": "Capital One",
+    "cardType": "Cashback",
     "default": 1.5,
-    "travel": 5
+    "travel": 5,
+    "includeInSeed": false
   },
   {
     "id": "capital-one-savorone",
     "name": "Capital One SavorOne",
-    "includeInSeed": true,
+    "issuer": "Capital One",
+    "cardType": "Cashback",
     "default": 1,
     "groceries": 3,
     "dining": 3,
     "travel": 5,
-    "entertainment": 3
+    "entertainment": 3,
+    "includeInSeed": true
+  },
+  {
+    "id": "capital-one-savor",
+    "name": "Capital One Savor",
+    "issuer": "Capital One",
+    "cardType": "Cashback",
+    "default": 1,
+    "groceries": 3,
+    "dining": 4,
+    "travel": 5,
+    "entertainment": 3,
+    "includeInSeed": false
   },
   {
     "id": "amex-blue-cash-preferred",
     "name": "Amex Blue Cash Preferred",
-    "includeInSeed": true,
+    "issuer": "Amex",
+    "cardType": "Cashback",
     "default": 1,
     "groceries": 6,
     "gas": 3,
-    "entertainment": 6
+    "entertainment": 6,
+    "includeInSeed": true
   },
   {
     "id": "amex-blue-cash-everyday",
     "name": "Amex Blue Cash Everyday",
-    "includeInSeed": false,
+    "issuer": "Amex",
+    "cardType": "Cashback",
     "default": 1,
     "groceries": 3,
     "gas": 3,
-    "online": 3
+    "online": 3,
+    "includeInSeed": false
   },
   {
     "id": "wells-fargo-active-cash",
     "name": "Wells Fargo Active Cash",
-    "includeInSeed": true,
-    "default": 2
+    "issuer": "Wells Fargo",
+    "cardType": "Cashback",
+    "default": 2,
+    "includeInSeed": true
+  },
+  {
+    "id": "wells-fargo-autograph",
+    "name": "Wells Fargo Autograph",
+    "issuer": "Wells Fargo",
+    "cardType": "Travel",
+    "default": 1,
+    "dining": 3,
+    "gas": 3,
+    "travel": 3,
+    "includeInSeed": false
   },
   {
     "id": "bofa-customized-cash-rewards",
     "name": "Bank of America Customized Cash Rewards",
-    "includeInSeed": false,
+    "issuer": "BofA",
+    "cardType": "Cashback",
     "default": 1,
     "groceries": 2,
     "gas": 2,
-    "other": 3
+    "other": 3,
+    "includeInSeed": false
+  },
+  {
+    "id": "bofa-unlimited-cash-rewards",
+    "name": "Bank of America Unlimited Cash Rewards",
+    "issuer": "BofA",
+    "cardType": "Cashback",
+    "default": 1.5,
+    "includeInSeed": false
   },
   {
     "id": "discover-it-cash-back",
-    "name": "Discover it Cash Back (5% rotating quarters not modeled)",
-    "includeInSeed": true,
-    "default": 1
+    "name": "Discover it Cash Back (5% rotating not modeled)",
+    "issuer": "Discover",
+    "cardType": "Cashback",
+    "default": 1,
+    "includeInSeed": true
+  },
+  {
+    "id": "discover-it-chrome",
+    "name": "Discover it Chrome",
+    "issuer": "Discover",
+    "cardType": "Cashback",
+    "default": 1,
+    "gas": 2,
+    "includeInSeed": false
   },
   {
     "id": "usbank-cash-plus",
-    "name": "U.S. Bank Cash+ (5% on two chosen categories not modeled)",
-    "includeInSeed": false,
-    "default": 1
-  },
-  {
-    "id": "citi-costco-anywhere",
-    "name": "Citi Costco Anywhere Visa",
-    "includeInSeed": false,
+    "name": "U.S. Bank Cash+ (5% chosen categories not modeled)",
+    "issuer": "US Bank",
+    "cardType": "Cashback",
     "default": 1,
-    "dining": 3,
-    "gas": 4,
-    "travel": 3
-  },
-  {
-    "id": "amazon-prime-visa",
-    "name": "Amazon Prime Visa",
-    "includeInSeed": true,
-    "default": 1,
-    "groceries": 5,
-    "dining": 2,
-    "gas": 2
-  },
-  {
-    "id": "apple-card",
-    "name": "Apple Card",
-    "includeInSeed": false,
-    "default": 1,
-    "online": 2
-  },
-  {
-    "id": "paypal-cashback-mastercard",
-    "name": "PayPal Cashback Mastercard",
-    "includeInSeed": false,
-    "default": 2,
-    "online": 3
-  },
-  {
-    "id": "synchrony-premier-world",
-    "name": "Synchrony Premier World Mastercard",
-    "includeInSeed": false,
-    "default": 2
-  },
-  {
-    "id": "capital-one-ventureone",
-    "name": "Capital One VentureOne Rewards",
-    "includeInSeed": false,
-    "default": 1.25
+    "includeInSeed": false
   },
   {
     "id": "usbank-altitude-go",
     "name": "U.S. Bank Altitude Go",
-    "includeInSeed": false,
+    "issuer": "US Bank",
+    "cardType": "Cashback",
     "default": 1,
     "groceries": 2,
     "dining": 4,
-    "entertainment": 2
+    "entertainment": 2,
+    "includeInSeed": false
+  },
+  {
+    "id": "usbank-altitude-connect",
+    "name": "U.S. Bank Altitude Connect",
+    "issuer": "US Bank",
+    "cardType": "Travel",
+    "default": 1,
+    "gas": 2,
+    "travel": 4,
+    "includeInSeed": false
+  },
+  {
+    "id": "citi-costco-anywhere",
+    "name": "Citi Costco Anywhere Visa",
+    "issuer": "Citi",
+    "cardType": "Cashback",
+    "default": 1,
+    "dining": 3,
+    "gas": 4,
+    "travel": 3,
+    "includeInSeed": false
+  },
+  {
+    "id": "amazon-prime-visa",
+    "name": "Amazon Prime Visa",
+    "issuer": "Chase",
+    "cardType": "Cashback",
+    "default": 1,
+    "groceries": 5,
+    "dining": 2,
+    "gas": 2,
+    "includeInSeed": true
+  },
+  {
+    "id": "apple-card",
+    "name": "Apple Card",
+    "issuer": "Goldman Sachs",
+    "cardType": "Cashback",
+    "default": 1,
+    "online": 2,
+    "includeInSeed": false
+  },
+  {
+    "id": "paypal-cashback-mastercard",
+    "name": "PayPal Cashback Mastercard",
+    "issuer": "Synchrony",
+    "cardType": "Cashback",
+    "default": 2,
+    "online": 3,
+    "includeInSeed": false
+  },
+  {
+    "id": "fidelity-rewards-visa",
+    "name": "Fidelity Rewards Visa",
+    "issuer": "Fidelity",
+    "cardType": "Cashback",
+    "default": 2,
+    "includeInSeed": false
+  },
+  {
+    "id": "sofi-credit-card",
+    "name": "SoFi Credit Card",
+    "issuer": "SoFi",
+    "cardType": "Cashback",
+    "default": 2,
+    "includeInSeed": false
+  },
+  {
+    "id": "venmo-credit-card",
+    "name": "Venmo Credit Card (dynamic top — modeled as 3% on several)",
+    "issuer": "Synchrony",
+    "cardType": "Cashback",
+    "default": 1,
+    "groceries": 3,
+    "dining": 3,
+    "gas": 3,
+    "travel": 3,
+    "includeInSeed": false
   },
   {
     "id": "aaa-daily-advantage",
-    "name": "AAA Daily Advantage Visa (Comenity)",
-    "includeInSeed": false,
+    "name": "AAA Daily Advantage Visa",
+    "issuer": "Comenity",
+    "cardType": "Cashback",
     "default": 1,
     "groceries": 5,
-    "gas": 3
+    "gas": 3,
+    "includeInSeed": false
+  },
+  {
+    "id": "aaa-travel-advantage",
+    "name": "AAA Travel Advantage Visa",
+    "issuer": "Comenity",
+    "cardType": "Cashback",
+    "default": 1,
+    "dining": 3,
+    "gas": 5,
+    "travel": 3,
+    "includeInSeed": false
+  },
+  {
+    "id": "robinhood-gold-card",
+    "name": "Robinhood Gold Card",
+    "issuer": "Robinhood",
+    "cardType": "Cashback",
+    "default": 3,
+    "includeInSeed": false
+  },
+  {
+    "id": "chase-sapphire-preferred",
+    "name": "Chase Sapphire Preferred",
+    "issuer": "Chase",
+    "cardType": "Travel",
+    "default": 1,
+    "groceries": 3,
+    "dining": 3,
+    "travel": 5,
+    "includeInSeed": false
+  },
+  {
+    "id": "chase-sapphire-reserve",
+    "name": "Chase Sapphire Reserve",
+    "issuer": "Chase",
+    "cardType": "Travel",
+    "default": 1,
+    "dining": 3,
+    "travel": 8,
+    "includeInSeed": false
+  },
+  {
+    "id": "capital-one-venture",
+    "name": "Capital One Venture",
+    "issuer": "Capital One",
+    "cardType": "Travel",
+    "default": 2,
+    "travel": 5,
+    "includeInSeed": false
+  },
+  {
+    "id": "capital-one-venture-x",
+    "name": "Capital One Venture X",
+    "issuer": "Capital One",
+    "cardType": "Travel",
+    "default": 2,
+    "travel": 10,
+    "includeInSeed": false
+  },
+  {
+    "id": "capital-one-ventureone",
+    "name": "Capital One VentureOne Rewards",
+    "issuer": "Capital One",
+    "cardType": "Travel",
+    "default": 1.25,
+    "includeInSeed": false
+  },
+  {
+    "id": "amex-gold",
+    "name": "American Express Gold",
+    "issuer": "Amex",
+    "cardType": "Travel",
+    "default": 1,
+    "groceries": 4,
+    "dining": 4,
+    "travel": 3,
+    "includeInSeed": false
+  },
+  {
+    "id": "amex-platinum",
+    "name": "American Express Platinum",
+    "issuer": "Amex",
+    "cardType": "Travel",
+    "default": 1,
+    "travel": 5,
+    "includeInSeed": false
+  },
+  {
+    "id": "bilt-mastercard",
+    "name": "Bilt Mastercard",
+    "issuer": "Wells Fargo",
+    "cardType": "Travel",
+    "default": 1,
+    "dining": 3,
+    "travel": 2,
+    "includeInSeed": false
+  },
+  {
+    "id": "citi-premier-strata",
+    "name": "Citi Premier (Strata Premier)",
+    "issuer": "Citi",
+    "cardType": "Travel",
+    "default": 1,
+    "groceries": 3,
+    "dining": 3,
+    "gas": 3,
+    "travel": 3,
+    "includeInSeed": false
+  },
+  {
+    "id": "citi-prestige-legacy",
+    "name": "Citi Prestige (legacy)",
+    "issuer": "Citi",
+    "cardType": "Travel",
+    "default": 1,
+    "dining": 5,
+    "travel": 5,
+    "includeInSeed": false
+  },
+  {
+    "id": "usbank-altitude-reserve",
+    "name": "U.S. Bank Altitude Reserve",
+    "issuer": "US Bank",
+    "cardType": "Travel",
+    "default": 1,
+    "travel": 3,
+    "includeInSeed": false
+  },
+  {
+    "id": "wells-fargo-journey",
+    "name": "Wells Fargo Journey",
+    "issuer": "Wells Fargo",
+    "cardType": "Travel",
+    "default": 1,
+    "travel": 5,
+    "includeInSeed": false
+  },
+  {
+    "id": "hsbc-premier-world-elite",
+    "name": "HSBC Premier World Elite",
+    "issuer": "HSBC",
+    "cardType": "Travel",
+    "default": 1,
+    "travel": 3,
+    "includeInSeed": false
+  },
+  {
+    "id": "barclays-arrival-plus",
+    "name": "Barclays Arrival Plus",
+    "issuer": "Barclays",
+    "cardType": "Travel",
+    "default": 2,
+    "includeInSeed": false
+  },
+  {
+    "id": "td-first-class-travel",
+    "name": "TD First Class Travel",
+    "issuer": "TD",
+    "cardType": "Travel",
+    "default": 1,
+    "travel": 3,
+    "includeInSeed": false
+  },
+  {
+    "id": "united-explorer",
+    "name": "United Explorer Card",
+    "issuer": "Chase",
+    "cardType": "Airline",
+    "default": 1,
+    "dining": 2,
+    "travel": 2,
+    "airline": 2,
+    "includeInSeed": false
+  },
+  {
+    "id": "united-quest",
+    "name": "United Quest Card",
+    "issuer": "Chase",
+    "cardType": "Airline",
+    "default": 1,
+    "dining": 2,
+    "travel": 3,
+    "airline": 3,
+    "includeInSeed": false
+  },
+  {
+    "id": "united-club-infinite",
+    "name": "United Club Infinite",
+    "issuer": "Chase",
+    "cardType": "Airline",
+    "default": 1,
+    "dining": 2,
+    "travel": 4,
+    "airline": 4,
+    "includeInSeed": false
+  },
+  {
+    "id": "united-gateway",
+    "name": "United Gateway Card",
+    "issuer": "Chase",
+    "cardType": "Airline",
+    "default": 1,
+    "dining": 2,
+    "travel": 2,
+    "airline": 2,
+    "includeInSeed": false
+  },
+  {
+    "id": "delta-skymiles-gold",
+    "name": "Delta SkyMiles Gold Amex",
+    "issuer": "Amex",
+    "cardType": "Airline",
+    "default": 1,
+    "dining": 2,
+    "travel": 2,
+    "airline": 2,
+    "includeInSeed": false
+  },
+  {
+    "id": "delta-skymiles-platinum",
+    "name": "Delta SkyMiles Platinum Amex",
+    "issuer": "Amex",
+    "cardType": "Airline",
+    "default": 1,
+    "dining": 2,
+    "travel": 3,
+    "airline": 3,
+    "includeInSeed": false
+  },
+  {
+    "id": "delta-skymiles-reserve",
+    "name": "Delta SkyMiles Reserve Amex",
+    "issuer": "Amex",
+    "cardType": "Airline",
+    "default": 1,
+    "dining": 2,
+    "travel": 3,
+    "airline": 3,
+    "includeInSeed": false
+  },
+  {
+    "id": "delta-skymiles-blue",
+    "name": "Delta SkyMiles Blue",
+    "issuer": "Amex",
+    "cardType": "Airline",
+    "default": 1,
+    "dining": 2,
+    "travel": 2,
+    "airline": 2,
+    "includeInSeed": false
+  },
+  {
+    "id": "aadvantage-mileup",
+    "name": "American Airlines AAdvantage MileUp",
+    "issuer": "Citi",
+    "cardType": "Airline",
+    "default": 1,
+    "groceries": 2,
+    "travel": 2,
+    "airline": 2,
+    "includeInSeed": false
+  },
+  {
+    "id": "aadvantage-platinum-select",
+    "name": "AAdvantage Platinum Select",
+    "issuer": "Citi",
+    "cardType": "Airline",
+    "default": 1,
+    "dining": 2,
+    "travel": 2,
+    "airline": 2,
+    "includeInSeed": false
+  },
+  {
+    "id": "aadvantage-executive",
+    "name": "AAdvantage Executive Card",
+    "issuer": "Citi",
+    "cardType": "Airline",
+    "default": 1,
+    "dining": 2,
+    "travel": 2,
+    "airline": 2,
+    "includeInSeed": false
+  },
+  {
+    "id": "aadvantage-aviator-red",
+    "name": "AAdvantage Aviator Red",
+    "issuer": "Barclays",
+    "cardType": "Airline",
+    "default": 1,
+    "dining": 2,
+    "travel": 2,
+    "airline": 2,
+    "includeInSeed": false
+  },
+  {
+    "id": "aadvantage-aviator-silver",
+    "name": "AAdvantage Aviator Silver",
+    "issuer": "Barclays",
+    "cardType": "Airline",
+    "default": 1,
+    "dining": 2,
+    "travel": 3,
+    "airline": 3,
+    "includeInSeed": false
+  },
+  {
+    "id": "southwest-plus",
+    "name": "Southwest Plus Card",
+    "issuer": "Chase",
+    "cardType": "Airline",
+    "default": 1,
+    "dining": 2,
+    "travel": 2,
+    "airline": 2,
+    "includeInSeed": false
+  },
+  {
+    "id": "southwest-premier",
+    "name": "Southwest Premier Card",
+    "issuer": "Chase",
+    "cardType": "Airline",
+    "default": 1,
+    "dining": 2,
+    "travel": 2,
+    "airline": 2,
+    "includeInSeed": false
+  },
+  {
+    "id": "southwest-priority",
+    "name": "Southwest Priority Card",
+    "issuer": "Chase",
+    "cardType": "Airline",
+    "default": 1,
+    "dining": 2,
+    "travel": 3,
+    "airline": 3,
+    "includeInSeed": false
+  },
+  {
+    "id": "jetblue-card",
+    "name": "JetBlue Card",
+    "issuer": "Barclays",
+    "cardType": "Airline",
+    "default": 1,
+    "dining": 2,
+    "travel": 3,
+    "airline": 3,
+    "includeInSeed": false
+  },
+  {
+    "id": "jetblue-plus",
+    "name": "JetBlue Plus Card",
+    "issuer": "Barclays",
+    "cardType": "Airline",
+    "default": 1,
+    "dining": 2,
+    "travel": 6,
+    "airline": 6,
+    "includeInSeed": false
+  },
+  {
+    "id": "alaska-airlines-visa",
+    "name": "Alaska Airlines Visa",
+    "issuer": "BofA",
+    "cardType": "Airline",
+    "default": 1,
+    "dining": 2,
+    "travel": 3,
+    "airline": 3,
+    "includeInSeed": false
+  },
+  {
+    "id": "hawaiian-airlines-mastercard",
+    "name": "Hawaiian Airlines Mastercard",
+    "issuer": "Barclays",
+    "cardType": "Airline",
+    "default": 1,
+    "dining": 2,
+    "travel": 3,
+    "airline": 3,
+    "includeInSeed": false
+  },
+  {
+    "id": "marriott-bonvoy-boundless",
+    "name": "Marriott Bonvoy Boundless",
+    "issuer": "Chase",
+    "cardType": "Hotel",
+    "default": 2,
+    "hotel": 17,
+    "includeInSeed": false
+  },
+  {
+    "id": "marriott-bonvoy-brilliant",
+    "name": "Marriott Bonvoy Brilliant",
+    "issuer": "Amex",
+    "cardType": "Hotel",
+    "default": 2,
+    "hotel": 6,
+    "includeInSeed": false
+  },
+  {
+    "id": "hilton-honors-surpass",
+    "name": "Hilton Honors Surpass",
+    "issuer": "Amex",
+    "cardType": "Hotel",
+    "default": 3,
+    "hotel": 12,
+    "includeInSeed": false
+  },
+  {
+    "id": "hilton-honors-aspire",
+    "name": "Hilton Honors Aspire",
+    "issuer": "Amex",
+    "cardType": "Hotel",
+    "default": 3,
+    "hotel": 14,
+    "includeInSeed": false
+  },
+  {
+    "id": "hilton-honors-card",
+    "name": "Hilton Honors Card",
+    "issuer": "Amex",
+    "cardType": "Hotel",
+    "default": 3,
+    "hotel": 7,
+    "includeInSeed": false
+  },
+  {
+    "id": "world-of-hyatt",
+    "name": "World of Hyatt Card",
+    "issuer": "Chase",
+    "cardType": "Hotel",
+    "default": 1,
+    "hotel": 4,
+    "includeInSeed": false
+  },
+  {
+    "id": "ihg-premier",
+    "name": "IHG Premier Card",
+    "issuer": "Chase",
+    "cardType": "Hotel",
+    "default": 1,
+    "hotel": 5,
+    "includeInSeed": false
+  },
+  {
+    "id": "ihg-traveler",
+    "name": "IHG Traveler Card",
+    "issuer": "Chase",
+    "cardType": "Hotel",
+    "default": 1,
+    "hotel": 3,
+    "includeInSeed": false
+  },
+  {
+    "id": "choice-privileges-visa",
+    "name": "Choice Privileges Visa",
+    "issuer": "Barclays",
+    "cardType": "Hotel",
+    "default": 1,
+    "hotel": 5,
+    "includeInSeed": false
+  },
+  {
+    "id": "wyndham-earner",
+    "name": "Wyndham Rewards Earner",
+    "issuer": "Barclays",
+    "cardType": "Hotel",
+    "default": 1,
+    "hotel": 5,
+    "includeInSeed": false
+  },
+  {
+    "id": "amex-blue-business-cash",
+    "name": "Amex Blue Business Cash",
+    "issuer": "Amex",
+    "cardType": "Business",
+    "default": 2,
+    "includeInSeed": false
+  },
+  {
+    "id": "ink-business-cash",
+    "name": "Ink Business Cash",
+    "issuer": "Chase",
+    "cardType": "Business",
+    "default": 1,
+    "other": 5,
+    "includeInSeed": false
+  },
+  {
+    "id": "ink-business-unlimited",
+    "name": "Ink Business Unlimited",
+    "issuer": "Chase",
+    "cardType": "Business",
+    "default": 1.5,
+    "includeInSeed": false
+  },
+  {
+    "id": "ink-business-preferred",
+    "name": "Ink Business Preferred",
+    "issuer": "Chase",
+    "cardType": "Business",
+    "default": 1,
+    "travel": 3,
+    "includeInSeed": false
+  },
+  {
+    "id": "spark-cash",
+    "name": "Capital One Spark Cash",
+    "issuer": "Capital One",
+    "cardType": "Business",
+    "default": 2,
+    "includeInSeed": false
+  },
+  {
+    "id": "spark-miles",
+    "name": "Capital One Spark Miles",
+    "issuer": "Capital One",
+    "cardType": "Business",
+    "default": 2,
+    "includeInSeed": false
+  },
+  {
+    "id": "brex-card",
+    "name": "Brex Card",
+    "issuer": "Brex",
+    "cardType": "Business",
+    "default": 1,
+    "includeInSeed": false
+  },
+  {
+    "id": "ramp-card",
+    "name": "Ramp Card",
+    "issuer": "Ramp",
+    "cardType": "Business",
+    "default": 1,
+    "includeInSeed": false
+  },
+  {
+    "id": "stripe-corporate-card",
+    "name": "Stripe Corporate Card",
+    "issuer": "Stripe",
+    "cardType": "Business",
+    "default": 1.5,
+    "includeInSeed": false
+  },
+  {
+    "id": "usbank-triple-cash",
+    "name": "U.S. Bank Triple Cash",
+    "issuer": "US Bank",
+    "cardType": "Business",
+    "default": 1,
+    "gas": 3,
+    "includeInSeed": false
+  },
+  {
+    "id": "pnc-cash-rewards",
+    "name": "PNC Cash Rewards",
+    "issuer": "PNC",
+    "cardType": "Cashback",
+    "default": 1,
+    "dining": 3,
+    "gas": 4,
+    "travel": 2,
+    "includeInSeed": false
+  },
+  {
+    "id": "td-cash-credit-card",
+    "name": "TD Cash Credit Card",
+    "issuer": "TD",
+    "cardType": "Cashback",
+    "default": 1,
+    "groceries": 3,
+    "dining": 3,
+    "gas": 3,
+    "includeInSeed": false
+  },
+  {
+    "id": "huntington-voice-rewards",
+    "name": "Huntington Voice Rewards",
+    "issuer": "Huntington",
+    "cardType": "Cashback",
+    "default": 1,
+    "groceries": 3,
+    "dining": 3,
+    "gas": 3,
+    "includeInSeed": false
+  },
+  {
+    "id": "fnbo-evergreen",
+    "name": "FNBO Evergreen",
+    "issuer": "FNBO",
+    "cardType": "Cashback",
+    "default": 2,
+    "includeInSeed": false
+  },
+  {
+    "id": "keybank-cashback",
+    "name": "KeyBank Cashback",
+    "issuer": "KeyBank",
+    "cardType": "Cashback",
+    "default": 2,
+    "includeInSeed": false
+  },
+  {
+    "id": "ollo-optimum",
+    "name": "Ollo Optimum",
+    "issuer": "Ollo",
+    "cardType": "Cashback",
+    "default": 2.5,
+    "includeInSeed": false
+  },
+  {
+    "id": "upgrade-cash-rewards",
+    "name": "Upgrade Cash Rewards",
+    "issuer": "Upgrade",
+    "cardType": "Cashback",
+    "default": 1.5,
+    "includeInSeed": false
+  },
+  {
+    "id": "petal-2-visa",
+    "name": "Petal 2 Visa",
+    "issuer": "Petal",
+    "cardType": "Cashback",
+    "default": 1.25,
+    "includeInSeed": false
+  },
+  {
+    "id": "mission-lane-cashback",
+    "name": "Mission Lane Cashback",
+    "issuer": "Mission Lane",
+    "cardType": "Cashback",
+    "default": 1.25,
+    "includeInSeed": false
+  },
+  {
+    "id": "deserve-pro-mastercard",
+    "name": "Deserve Pro Mastercard",
+    "issuer": "Deserve",
+    "cardType": "Cashback",
+    "default": 1,
+    "includeInSeed": false
+  },
+  {
+    "id": "opensky-secured-visa",
+    "name": "OpenSky Secured Visa",
+    "issuer": "OpenSky",
+    "cardType": "Secured",
+    "default": 0,
+    "includeInSeed": false
+  },
+  {
+    "id": "discover-it-secured",
+    "name": "Discover it Secured",
+    "issuer": "Discover",
+    "cardType": "Secured",
+    "default": 1,
+    "includeInSeed": false
+  },
+  {
+    "id": "capital-one-platinum-secured",
+    "name": "Capital One Platinum Secured",
+    "issuer": "Capital One",
+    "cardType": "Secured",
+    "default": 0,
+    "includeInSeed": false
+  },
+  {
+    "id": "bofa-secured-card",
+    "name": "Bank of America Secured Card",
+    "issuer": "BofA",
+    "cardType": "Secured",
+    "default": 1,
+    "groceries": 2,
+    "gas": 2,
+    "includeInSeed": false
+  },
+  {
+    "id": "citi-secured-mastercard",
+    "name": "Citi Secured Mastercard",
+    "issuer": "Citi",
+    "cardType": "Secured",
+    "default": 0,
+    "includeInSeed": false
+  },
+  {
+    "id": "synchrony-premier-world",
+    "name": "Synchrony Premier World Mastercard",
+    "issuer": "Synchrony",
+    "cardType": "Cashback",
+    "default": 2,
+    "includeInSeed": false
   }
 ]

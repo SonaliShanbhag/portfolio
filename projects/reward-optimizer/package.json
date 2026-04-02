@@ -6,7 +6,8 @@
     "dev": "next dev --port 5179",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "presets:generate": "node scripts/generate-card-presets.mjs"
   },
   "dependencies": {
     "firebase": "^11.10.0",
