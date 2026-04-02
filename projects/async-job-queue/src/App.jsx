@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import PortfolioBackBar from "../../shared/PortfolioBackBar.jsx";
 
 let idSeq = 0;
 function nextId() {
@@ -134,6 +135,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#070708] bg-[radial-gradient(ellipse_120%_80%_at_50%_-20%,oklch(0.22_0.08_310/0.45),transparent_50%)] px-4 py-10 md:px-8">
+      <PortfolioBackBar />
       <div className="mx-auto max-w-5xl">
         <header className="mb-10">
           <p className="font-[family-name:var(--font-family-display)] text-xs font-semibold uppercase tracking-[0.2em] text-fuchsia-400/80">

@@ -1,10 +1,12 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import PortfolioBackBar from "../../shared/PortfolioBackBar.jsx";
 import { askLibrarian, getDefaultOllamaModel, getOllamaBaseUrl } from "./lib/librarian.js";
 import { enrichBooks } from "./lib/enrichBooks.js";
 
 const STORAGE_MODEL = "book-librarian-ollama-model";
 const STORAGE_BASE = "book-librarian-ollama-base";
 const STORAGE_STARRED = "book-librarian-starred";
+const STORAGE_LOCAL_BLURB = "book-librarian-local-blurb-dismissed";
 
 function starKey(book) {
   const t = (book.title || book.displayTitle || "").trim().toLowerCase();
@@ -128,6 +130,61 @@ const SUGGESTIONS = [
   "Nonfiction about how habits and decision-making work",
 ];
 
+function LocalSetupBlurb({ onDismiss }) {
+  return (
+    <aside
+      className="mb-6 rounded-2xl border border-fuchsia-500/25 bg-gradient-to-br from-fuchsia-950/35 via-zinc-950/50 to-black/50 p-4 shadow-[0_0_40px_-20px_rgba(217,70,239,0.35)] sm:p-5"
+      role="note"
+      aria-labelledby="local-setup-blurb-title"
+    >
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <h2 id="local-setup-blurb-title" className="font-display text-base font-semibold text-white sm:text-lg">
+          Local Ollama required
+        </h2>
+        <button
+          type="button"
+          onClick={onDismiss}
+          className="shrink-0 rounded-lg border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-medium text-zinc-300 transition hover:border-white/25 hover:text-white"
+        >
+          Dismiss
+        </button>
+      </div>
+      <p className="mt-3 text-sm leading-relaxed text-zinc-400">
+        <span className="font-bold text-fuchsia-400" aria-hidden>
+          *{" "}
+        </span>
+        You can only run this demo on your own machine: the UI calls Ollama at{" "}
+        <code className="rounded-md border border-white/10 bg-black/50 px-1.5 py-0.5 text-[0.85em] text-zinc-200">
+          127.0.0.1:11434
+        </code>
+        . Install{" "}
+        <a
+          href="https://ollama.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-fuchsia-300 underline decoration-fuchsia-500/40 underline-offset-2 hover:text-fuchsia-200"
+        >
+          Ollama
+        </a>
+        , then run:
+      </p>
+      <pre className="mt-3 overflow-x-auto rounded-xl border border-white/10 bg-black/60 p-3 font-mono text-[13px] leading-relaxed text-emerald-200/95 shadow-inner sm:text-sm">
+        {`ollama pull llama3.2
+ollama serve`}
+      </pre>
+      <p className="mt-3 text-xs leading-relaxed text-zinc-500">
+        <code className="rounded bg-white/[0.06] px-1 py-0.5 text-zinc-400">ollama serve</code> is often
+        already running in the background. From the portfolio repo root, start the app with{" "}
+        <code className="rounded bg-white/[0.06] px-1 py-0.5 text-zinc-400">
+          npm run dev --prefix projects/book-librarian
+        </code>{" "}
+        (port 5176) or <code className="rounded bg-white/[0.06] px-1 py-0.5 text-zinc-400">npm run dev:all</code>{" "}
+        and open <code className="rounded bg-white/[0.06] px-1 py-0.5 text-zinc-400">/librarian/</code>.
+      </p>
+    </aside>
+  );
+}
+
 export default function App() {
   const [model, setModel] = useState(getDefaultOllamaModel);
   const [baseUrlOverride, setBaseUrlOverride] = useState("");
@@ -139,6 +196,35 @@ export default function App() {
   const [error, setError] = useState(null);
   const [messages, setMessages] = useState([]);
   const bottomRef = useRef(null);
+  const localBlurbAnchorRef = useRef(null);
+  const prevLocalBlurbVisible = useRef(/** @type {boolean | null} */ (null));
+  const [showLocalBlurb, setShowLocalBlurb] = useState(() => {
+    try {
+      return !localStorage.getItem(STORAGE_LOCAL_BLURB);
+    } catch {
+      return true;
+    }
+  });
+
+  const dismissLocalBlurb = useCallback(() => {
+    try {
+      localStorage.setItem(STORAGE_LOCAL_BLURB, "1");
+    } catch {
+      /* ignore */
+    }
+    setShowLocalBlurb(false);
+  }, []);
+
+  useEffect(() => {
+    if (prevLocalBlurbVisible.current === null) {
+      prevLocalBlurbVisible.current = showLocalBlurb;
+      return;
+    }
+    if (showLocalBlurb && prevLocalBlurbVisible.current === false) {
+      localBlurbAnchorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+    prevLocalBlurbVisible.current = showLocalBlurb;
+  }, [showLocalBlurb]);
 
   useEffect(() => {
     const m = localStorage.getItem(STORAGE_MODEL);
@@ -238,6 +324,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#070708] text-zinc-100 pb-32">
+      <PortfolioBackBar />
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(217,70,239,0.1),transparent)]" />
 
       <header className="relative border-b border-white/5 bg-[#070708]/90 backdrop-blur-md">
@@ -250,13 +337,39 @@ export default function App() {
               comp titles, or the vibe you want.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => setShowSettings((s) => !s)}
-            className="shrink-0 rounded-lg border border-white/15 px-4 py-2 text-sm text-zinc-200 hover:border-fuchsia-500/40"
-          >
-            Settings
-          </button>
+          <div className="flex shrink-0 items-center gap-2 self-start sm:self-center">
+            <button
+              type="button"
+              onClick={() => setShowLocalBlurb(true)}
+              aria-label="Show local Ollama setup instructions"
+              aria-expanded={showLocalBlurb}
+              title="Local setup (Ollama)"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/15 text-zinc-400 transition hover:border-fuchsia-500/40 hover:text-fuchsia-200"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.75"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-5 w-5"
+                aria-hidden
+              >
+                <circle cx="12" cy="12" r="10" />
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                <path d="M12 17h.01" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowSettings((s) => !s)}
+              className="rounded-lg border border-white/15 px-4 py-2 text-sm text-zinc-200 hover:border-fuchsia-500/40"
+            >
+              Settings
+            </button>
+          </div>
         </div>
 
         <nav
@@ -348,6 +461,10 @@ export default function App() {
       )}
 
       <main className="relative mx-auto max-w-3xl px-4 py-6">
+        <div ref={localBlurbAnchorRef}>
+          {showLocalBlurb ? <LocalSetupBlurb onDismiss={dismissLocalBlurb} /> : null}
+        </div>
+
         {activeTab === "chat" && (
           <>
             {messages.length === 0 && !loading && (

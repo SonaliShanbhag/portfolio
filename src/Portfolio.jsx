@@ -1,5 +1,191 @@
-import React, { useEffect, useId, useState } from "react";
+import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import photo from "./assets/photo.png";
+
+/**
+ * 3×2 grid: top row About · (empty center) · Skills so the headline isn’t under a bubble;
+ * bottom row Experience · Projects · Contact.
+ */
+const BUBBLE_SECTIONS = [
+  { id: "about", label: "About", orbit: "bubble-orbit-1", area: "about" },
+  { id: "skills", label: "Skills", orbit: "bubble-orbit-2", area: "skills" },
+  { id: "experience", label: "Experience", orbit: "bubble-orbit-3", area: "experience" },
+  { id: "projects", label: "Projects", orbit: "bubble-orbit-4", area: "projects" },
+  { id: "contact", label: "Contact", orbit: "bubble-orbit-5", area: "contact" },
+];
+
+const BUBBLE_GRID_TEMPLATE = '"about . skills" "experience projects contact"';
+
+/** Append ?deck= so embedded demos can link back to the right project card. */
+function withDeckQuery(href, projectKey) {
+  if (!href || !projectKey) return href;
+  const sep = href.includes("?") ? "&" : "?";
+  return `${href}${sep}deck=${encodeURIComponent(projectKey)}`;
+}
+
+function readProjectsDeepLink() {
+  if (typeof window === "undefined") return { openProjects: false, deckKey: null };
+  const p = new URLSearchParams(window.location.search);
+  return {
+    openProjects: p.get("open_projects") === "1",
+    deckKey: p.get("deck"),
+  };
+}
+
+function deckIndexFromKey(projects, key) {
+  if (!key) return 0;
+  const i = projects.findIndex((p) => p.projectKey === key);
+  return i >= 0 ? i : 0;
+}
+
+/** Deterministic PRNG for stable star positions across renders. */
+function mulberry32(seed) {
+  return function next() {
+    let t = (seed += 0x6d2b79f5);
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function StarField() {
+  const stars = useMemo(() => {
+    const rand = mulberry32(0x2f6c1a8b);
+    const n = 130;
+    const out = [];
+    for (let i = 0; i < n; i++) {
+      out.push({
+        x: rand() * 100,
+        y: rand() * 100,
+        w: rand() * 1.75 + 0.45,
+        delay: rand() * 9,
+        duration: 2.6 + rand() * 5.5,
+        accent: rand() > 0.9,
+      });
+    }
+    return out;
+  }, []);
+
+  return (
+    <div className="pointer-events-none fixed inset-0 z-[1] overflow-hidden" aria-hidden>
+      {stars.map((s, i) => (
+        <span
+          key={i}
+          className={`star-dot absolute rounded-full ${s.accent ? "bg-fuchsia-200/90" : "bg-white"}`}
+          style={{
+            left: `${s.x}%`,
+            top: `${s.y}%`,
+            width: `${s.w}px`,
+            height: `${s.w}px`,
+            animationDelay: `${s.delay}s`,
+            animationDuration: `${s.duration}s`,
+            boxShadow: s.accent
+              ? `0 0 ${Math.round(s.w * 4)}px rgba(232, 121, 249, 0.45)`
+              : s.w > 1.15
+                ? `0 0 ${Math.round(s.w * 2.5)}px rgba(255, 255, 255, 0.2)`
+                : undefined,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function SectionDrawer({ open, titleId, title, children, onClose }) {
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e) => {
+      if (e.key !== "Escape") return;
+      if (document.querySelector("[data-why-expanded]")) return;
+      onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [open, onClose]);
+
+  if (!open) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+    >
+      <button
+        type="button"
+        className="absolute inset-0 bg-zinc-950/55 backdrop-blur-[2px]"
+        aria-label="Close"
+        onClick={onClose}
+      />
+      <div className="relative z-10 max-h-[min(92vh,44rem)] w-full max-w-3xl overflow-y-auto rounded-2xl border border-white/10 bg-zinc-900/95 p-6 shadow-2xl shadow-black/30 ring-1 ring-white/[0.06] sm:p-8">
+        <div className="flex items-start justify-between gap-4">
+          <h2
+            id={titleId}
+            className="font-display min-w-0 flex-1 text-2xl font-bold tracking-tight text-white md:text-3xl"
+          >
+            {title}
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close"
+            className="-m-2 shrink-0 rounded-lg p-2 text-2xl leading-none text-zinc-500 transition hover:bg-white/10 hover:text-white"
+          >
+            <span aria-hidden>×</span>
+          </button>
+        </div>
+        <div className="mt-6">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function BubbleField({ onSelect, openPanelId }) {
+  return (
+    <nav
+      aria-label="Explore sections"
+      className="pointer-events-none absolute inset-0 z-[35] grid h-full w-full grid-cols-3 grid-rows-2 gap-x-2 gap-y-2 overflow-visible px-2 py-2 sm:gap-x-4 sm:gap-y-4 sm:px-4 sm:py-3"
+      style={{ gridTemplateAreas: BUBBLE_GRID_TEMPLATE }}
+    >
+      {BUBBLE_SECTIONS.map((s) => (
+        <div
+          key={s.id}
+          className={`flex min-h-0 min-w-0 items-center justify-center ${s.orbit}`}
+          style={{ gridArea: s.area }}
+        >
+          <div className="relative">
+            <div
+              className="bubble-halo pointer-events-none absolute -inset-8 rounded-full bg-gradient-to-br from-fuchsia-500/35 to-violet-600/20 blur-2xl"
+              aria-hidden
+            />
+            <button
+              type="button"
+              onClick={() => onSelect(s.id)}
+              aria-label={`Open ${s.label}`}
+              aria-pressed={openPanelId === s.id}
+              className={[
+                "pointer-events-auto relative flex h-[6.25rem] w-[6.25rem] cursor-pointer touch-manipulation items-center justify-center rounded-full border px-2 py-2 text-center shadow-lg transition sm:h-[7.25rem] sm:w-[7.25rem] md:h-[8rem] md:w-[8rem] lg:h-[8.75rem] lg:w-[8.75rem]",
+                "active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-400",
+                openPanelId === s.id
+                  ? "border-fuchsia-400/80 bg-gradient-to-br from-fuchsia-500/55 to-violet-600/50 text-white shadow-[0_0_36px_-4px_rgba(217,70,239,0.7)] ring-2 ring-fuchsia-400/50"
+                  : "border-white/25 bg-gradient-to-br from-white/18 to-white/[0.06] text-zinc-50 backdrop-blur-md hover:border-fuchsia-400/50 hover:from-fuchsia-500/40 hover:to-violet-600/35 hover:shadow-[0_0_28px_-6px_rgba(217,70,239,0.55)]",
+              ].join(" ")}
+            >
+              <span className="font-display text-[10px] font-bold leading-tight tracking-tight text-balance sm:text-[11px] md:text-xs lg:text-[13px]">
+                {s.label}
+              </span>
+            </button>
+          </div>
+        </div>
+      ))}
+    </nav>
+  );
+}
 
 const EXPERIENCE = [
   {
@@ -118,136 +304,306 @@ const REWARD_OPTIMIZER_DEMO =
   "https://portfolio-tau-three-jcci2viy7z.vercel.app/";
 
 /** Structured "Why?" body: personal angle, bullet list, personal tie-in. */
-function WhySections({ angle, listIntro, bullets, tieIn }) {
+function WhySections({ angle, listIntro, bullets, tieIn, compact = false }) {
+  const rootClass = compact
+    ? "mt-0 space-y-4 text-sm leading-relaxed text-zinc-300 sm:text-[15px] sm:leading-relaxed"
+    : "mt-4 space-y-5 text-sm leading-relaxed text-zinc-400";
+  const intro = compact
+    ? "mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-fuchsia-400/80"
+    : "mb-2 text-zinc-500";
+  const ul = compact
+    ? "list-none space-y-2.5 pl-0 text-zinc-200 [&>li]:relative [&>li]:pl-5 [&>li]:before:absolute [&>li]:before:left-0 [&>li]:before:top-[0.55em] [&>li]:before:h-1.5 [&>li]:before:w-1.5 [&>li]:before:rounded-full [&>li]:before:bg-fuchsia-400/70"
+    : "list-disc space-y-1.5 pl-5 marker:text-zinc-600";
+  const tieGap = compact ? "[&_p+p]:mt-2" : "[&_p+p]:mt-3";
+  const angleLead = compact ? "[&>p]:leading-normal" : "[&>p]:leading-relaxed";
+
   return (
-    <div className="mt-4 space-y-5 text-sm leading-relaxed text-zinc-400">
+    <div className={rootClass}>
       <section>
-        <div className="[&>p]:leading-relaxed">
+        <div className={angleLead}>
           {typeof angle === "string" ? <p>{angle}</p> : angle}
         </div>
       </section>
       <section>
-        <p className="mb-2 text-zinc-500">{listIntro}</p>
-        <ul className="list-disc space-y-1.5 pl-5 marker:text-zinc-600">
+        <p className={intro}>{listIntro}</p>
+        <ul className={ul}>
           {bullets.map((item) => (
             <li key={item}>{item}</li>
           ))}
         </ul>
       </section>
       <section>
-        <div className="[&_p+p]:mt-3">{typeof tieIn === "string" ? <p>{tieIn}</p> : tieIn}</div>
+        <div className={tieGap}>{typeof tieIn === "string" ? <p>{tieIn}</p> : tieIn}</div>
       </section>
     </div>
   );
 }
 
-function ProjectCard({ title, description, bullets, demoHref, sourceHref, why }) {
+function ProjectCard({
+  title,
+  description,
+  bullets,
+  demoHref,
+  sourceHref,
+  why,
+  isActive = true,
+  projectKey: _projectKey,
+}) {
   const [whyOpen, setWhyOpen] = useState(false);
   const whyTitleId = useId();
 
   useEffect(() => {
+    if (!isActive) setWhyOpen(false);
+  }, [isActive]);
+
+  useEffect(() => {
     if (!whyOpen) return;
     const onKey = (e) => {
-      if (e.key === "Escape") setWhyOpen(false);
+      if (e.key === "Escape") {
+        e.stopPropagation();
+        setWhyOpen(false);
+      }
     };
     document.addEventListener("keydown", onKey);
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prevOverflow;
-    };
+    return () => document.removeEventListener("keydown", onKey);
   }, [whyOpen]);
 
   return (
-    <article className="group flex flex-col rounded-2xl border border-white/10 bg-white/[0.02] p-6 transition hover:border-fuchsia-500/30 hover:shadow-[0_0_48px_-16px_rgba(217,70,239,0.25)]">
-      <h3 className="font-display text-xl font-bold text-white">{title}</h3>
-      <p className="mt-2 flex-1 text-sm leading-relaxed text-zinc-400">{description}</p>
-      <ul className="mt-4 space-y-1.5 text-sm text-zinc-300">
-        {bullets.map((b) => (
-          <li key={b}>{b}</li>
-        ))}
-      </ul>
-      <div className="mt-6 flex flex-wrap gap-3">
-        {demoHref ? (
-        <a
-          href={demoHref}
-          {...(/^https?:\/\//i.test(demoHref)
-            ? { target: "_blank", rel: "noopener noreferrer" }
-            : {})}
-          className="inline-flex items-center justify-center rounded-lg bg-fuchsia-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-fuchsia-500"
+    <div
+      className="w-full [perspective:1200px]"
+      data-why-expanded={whyOpen ? "" : undefined}
+    >
+      <div className="relative min-h-[min(68vh,26rem)] w-full sm:min-h-[min(72vh,28rem)]">
+        <article
+          className={[
+            "relative h-full min-h-[inherit] w-full transition-transform duration-700 ease-out motion-reduce:duration-0 [transform-style:preserve-3d]",
+            whyOpen ? "[transform:rotateY(180deg)]" : "",
+          ].join(" ")}
+          aria-label={whyOpen ? `${title}: why I built this` : title}
         >
-          Open demo
-        </a>
-        ) : null}
-        <a
-          href={sourceHref}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center justify-center rounded-lg border border-white/15 px-4 py-2 text-sm font-medium text-zinc-200 transition hover:border-fuchsia-500/40 hover:text-white"
-        >
-          View source
-        </a>
+          {/* Front */}
+          <div
+            className="group/front absolute inset-0 flex flex-col overflow-hidden rounded-3xl border border-white/[0.14] bg-gradient-to-br from-zinc-900/95 via-zinc-900/90 to-fuchsia-950/35 p-6 shadow-[0_24px_60px_-28px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.04)_inset] [backface-visibility:hidden] [transform:rotateY(0deg)] transition-[border-color,box-shadow] duration-300 hover:border-fuchsia-400/35 hover:shadow-[0_28px_70px_-24px_rgba(168,85,247,0.22),0_0_0_1px_rgba(217,70,239,0.12)_inset] sm:p-7"
+            aria-hidden={whyOpen}
+          >
+            <div
+              className="pointer-events-none absolute -right-20 -top-20 h-48 w-48 rounded-full bg-fuchsia-500/12 blur-3xl transition-opacity duration-300 group-hover/front:opacity-90"
+              aria-hidden
+            />
+            <div
+              className="pointer-events-none absolute -bottom-16 -left-12 h-40 w-40 rounded-full bg-violet-600/10 blur-3xl"
+              aria-hidden
+            />
+            <div className="relative">
+              <div
+                className="h-1 w-14 rounded-full bg-gradient-to-r from-fuchsia-400 to-violet-500 shadow-[0_0_20px_rgba(217,70,239,0.45)] sm:w-16"
+                aria-hidden
+              />
+              <h3 className="font-display mt-4 text-xl font-extrabold leading-[1.15] tracking-tight text-white sm:mt-5 sm:text-2xl">
+                {title}
+              </h3>
+              <p className="mt-3 flex-1 text-base leading-relaxed text-zinc-300 sm:text-lg sm:leading-relaxed">
+                {description}
+              </p>
+              <ul className="mt-4 list-none space-y-2.5 text-base leading-snug text-zinc-100 sm:space-y-3 sm:text-[17px] sm:leading-snug">
+                {bullets.map((b) => (
+                  <li key={b} className="relative pl-5 before:absolute before:left-0 before:top-[0.55em] before:h-1.5 before:w-1.5 before:rounded-full before:bg-gradient-to-br before:from-fuchsia-400 before:to-violet-500 before:shadow-[0_0_8px_rgba(217,70,239,0.5)]">
+                    {b}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="relative mt-5 flex flex-wrap gap-2.5 sm:mt-6">
+              {demoHref ? (
+                <a
+                  href={demoHref}
+                  {...(/^https?:\/\//i.test(demoHref)
+                    ? { target: "_blank", rel: "noopener noreferrer" }
+                    : {})}
+                  className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-fuchsia-600 to-fuchsia-500 px-5 py-2.5 text-base font-semibold text-white shadow-[0_8px_28px_-8px_rgba(217,70,239,0.55)] transition hover:from-fuchsia-500 hover:to-fuchsia-400 hover:shadow-[0_12px_32px_-6px_rgba(217,70,239,0.45)]"
+                >
+                  Open demo
+                </a>
+              ) : null}
+              <a
+                href={sourceHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/[0.06] px-5 py-2.5 text-base font-medium text-zinc-100 backdrop-blur-sm transition hover:border-fuchsia-400/45 hover:bg-white/[0.1] hover:text-white"
+              >
+                View source
+              </a>
+              <button
+                type="button"
+                onClick={() => setWhyOpen(true)}
+                className="inline-flex items-center justify-center rounded-xl border border-fuchsia-400/35 bg-fuchsia-500/10 px-5 py-2.5 text-base font-semibold text-fuchsia-100 transition hover:border-fuchsia-300/50 hover:bg-fuchsia-500/[0.18] hover:text-white"
+              >
+                Why?
+              </button>
+            </div>
+          </div>
+
+          {/* Back (why): header / scroll body / footer so button never overlaps text */}
+          <div
+            className="absolute inset-0 flex min-h-0 flex-col overflow-hidden rounded-3xl border border-fuchsia-500/25 bg-gradient-to-b from-zinc-900/98 to-zinc-950/98 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] [backface-visibility:hidden] [transform:rotateY(180deg)]"
+            aria-hidden={!whyOpen}
+          >
+            <div className="flex shrink-0 items-start justify-between gap-2 border-b border-white/10 bg-fuchsia-950/20 px-5 pb-3.5 pt-5 sm:px-6">
+              <h4
+                id={whyTitleId}
+                className="font-display min-w-0 flex-1 text-base font-bold leading-snug tracking-tight text-white sm:text-lg"
+              >
+                Why {title}?
+              </h4>
+              <button
+                type="button"
+                onClick={() => setWhyOpen(false)}
+                aria-label="Flip back to project"
+                className="-mr-1 -mt-1 shrink-0 rounded-lg p-1.5 text-xl leading-none text-zinc-500 transition hover:bg-white/10 hover:text-white"
+              >
+                <span aria-hidden>×</span>
+              </button>
+            </div>
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-4 sm:px-6">
+              {why}
+            </div>
+            <div className="shrink-0 border-t border-white/10 bg-zinc-950/60 px-5 py-3 sm:px-6">
+              <button
+                type="button"
+                onClick={() => setWhyOpen(false)}
+                className="w-full rounded-xl border border-white/12 bg-white/[0.06] py-2.5 text-center text-sm font-medium text-zinc-200 transition hover:border-fuchsia-400/35 hover:text-white"
+              >
+                ← Back to project
+              </button>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+  );
+}
+
+function ProjectsDeck({ projects, initialDeckKey }) {
+  const n = projects.length;
+  const [index, setIndex] = useState(() => deckIndexFromKey(projects, initialDeckKey));
+  const touchStartX = useRef(null);
+
+  const go = useCallback(
+    (delta) => {
+      setIndex((i) => (i + delta + n) % n);
+    },
+    [n]
+  );
+
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+      if (e.target instanceof Element && e.target.closest("[data-why-expanded]")) return;
+      e.preventDefault();
+      go(e.key === "ArrowLeft" ? -1 : 1);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [go]);
+
+  const onTouchStart = (e) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const onTouchEnd = (e) => {
+    if (touchStartX.current == null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    touchStartX.current = null;
+    if (Math.abs(dx) < 48) return;
+    if (dx > 0) go(-1);
+    else go(1);
+  };
+
+  return (
+    <div className="mt-6">
+      <div className="flex items-stretch gap-2 sm:gap-3">
         <button
           type="button"
-          onClick={() => setWhyOpen(true)}
-          className="inline-flex items-center justify-center rounded-lg border border-fuchsia-500/25 bg-fuchsia-500/5 px-4 py-2 text-sm font-medium text-fuchsia-200/90 transition hover:border-fuchsia-400/50 hover:bg-fuchsia-500/10 hover:text-fuchsia-100"
+          onClick={() => go(-1)}
+          aria-label="Previous project"
+          className="flex w-9 shrink-0 items-center justify-center self-center rounded-xl border border-white/15 bg-white/[0.04] text-lg text-zinc-300 transition hover:border-fuchsia-500/40 hover:bg-white/[0.08] hover:text-white sm:w-10"
         >
-          Why?
+          ‹
+        </button>
+
+        <div
+          className="min-w-0 flex-1 overflow-hidden rounded-3xl"
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+        >
+          <div
+            className="flex transition-transform duration-300 ease-out motion-reduce:transition-none"
+            style={{
+              width: `${n * 100}%`,
+              transform: `translateX(-${(index * 100) / n}%)`,
+            }}
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            {projects.map((p, i) => (
+              <div
+                key={p.title}
+                className={`shrink-0 px-0.5 sm:px-1 ${
+                  i === index ? "pointer-events-auto" : "pointer-events-none"
+                }`}
+                style={{ width: `${100 / n}%` }}
+                {...(i !== index ? { inert: "" } : {})}
+              >
+                <ProjectCard {...p} demoHref={withDeckQuery(p.demoHref, p.projectKey)} isActive={i === index} />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => go(1)}
+          aria-label="Next project"
+          className="flex w-9 shrink-0 items-center justify-center self-center rounded-xl border border-white/15 bg-white/[0.04] text-lg text-zinc-300 transition hover:border-fuchsia-500/40 hover:bg-white/[0.08] hover:text-white sm:w-10"
+        >
+          ›
         </button>
       </div>
 
-      {whyOpen && (
-        <div
-          className="fixed inset-0 z-[100] flex items-end justify-center p-4 sm:items-center"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby={whyTitleId}
-        >
+      <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+        {projects.map((p, i) => (
           <button
+            key={p.title}
             type="button"
-            className="absolute inset-0 bg-zinc-950/50"
-            aria-label="Close"
-            onClick={() => setWhyOpen(false)}
+            onClick={() => setIndex(i)}
+            aria-label={`Show project ${i + 1}: ${p.title}`}
+            aria-current={i === index ? "true" : undefined}
+            className={[
+              "h-2 rounded-full transition-all",
+              i === index
+                ? "w-6 bg-fuchsia-500"
+                : "w-2 bg-zinc-600 hover:bg-zinc-500",
+            ].join(" ")}
           />
-          <div className="relative z-10 max-h-[min(90vh,40rem)] w-full max-w-xl overflow-y-auto rounded-xl border border-zinc-700/40 bg-zinc-900/95 p-6 shadow-lg shadow-black/20 ring-1 ring-white/[0.04]">
-            <h4 id={whyTitleId} className="font-display pr-10 text-base font-semibold tracking-tight text-zinc-200">
-              {title}
-            </h4>
-            <div className="text-sm">{why}</div>
-            <button
-              type="button"
-              onClick={() => setWhyOpen(false)}
-              className="mt-6 w-full rounded-lg bg-zinc-800/60 py-2.5 text-sm font-medium text-zinc-400 transition hover:bg-zinc-800 hover:text-zinc-200"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
-    </article>
+        ))}
+      </div>
+
+      <p className="mt-3 text-center text-xs text-zinc-500">
+        Use arrows on your keyboard or swipe on touch screens. {index + 1} / {n}
+      </p>
+    </div>
   );
 }
 
-function NavLink({ href, children }) {
+function NavButton({ onClick, children }) {
   return (
-    <a
-      href={href}
-      className="text-sm text-zinc-400 transition hover:text-fuchsia-300"
+    <button
+      type="button"
+      onClick={onClick}
+      className="rounded-md px-1 py-1.5 text-sm text-zinc-400 transition hover:text-fuchsia-300 sm:px-2"
     >
       {children}
-    </a>
-  );
-}
-
-function SectionTitle({ children, id }) {
-  return (
-    <h2
-      id={id}
-      className="font-display text-2xl font-bold tracking-tight text-white md:text-3xl"
-    >
-      {children}
-    </h2>
+    </button>
   );
 }
 
@@ -262,7 +618,7 @@ function ConnectForm() {
     const trimmedSubject = subject.trim();
     const trimmedMessage = message.trim();
     const mailSubject = encodeURIComponent(
-      trimmedSubject ? `[Portfolio] ${trimmedSubject}` : "Portfolio — message from site"
+      trimmedSubject ? `[Portfolio] ${trimmedSubject}` : "Portfolio: message from site"
     );
     const mailBody = encodeURIComponent(
       `${trimmedName ? `Name: ${trimmedName}\n\n` : ""}${trimmedMessage}`
@@ -336,6 +692,7 @@ export default function Portfolio() {
   const base = import.meta.env.BASE_URL;
   const projects = [
     {
+      projectKey: "simulator",
       title: "Distributed system simulator",
       description:
         "Simulates service failures and visualizes cascading issues across a distributed request chain.",
@@ -344,31 +701,25 @@ export default function Portfolio() {
       sourceHref: `${GITHUB_REPO}/tree/main/projects/distributed-simulator`,
       why: (
         <WhySections
+          compact
           angle={
             <>
-              I built this because I kept running into vague discussions about &quot;resilience&quot; and
-              &quot;timeouts&quot; that were hard to internalize without seeing them in action. This
-              simulator lets me <em className="italic text-zinc-300">experiment with failure</em>. I can
-              literally watch how one slow service cascades into system-wide issues.
+              &quot;Resilience&quot; and timeouts are easier to <em className="italic text-zinc-300">feel</em>{" "}
+              than to debate. This simulator shows how one slow node or bad timeout cascades, no prod cluster
+              required.
             </>
           }
-          listIntro="It's been especially useful for:"
+          listIntro="Good for:"
           bullets={[
-            "Developing intuition around retries, backoff, and circuit breakers",
-            "Understanding how small latency spikes can snowball",
-            "Practicing debugging distributed systems without needing a real production environment",
+            "Retries, backoff, and failure propagation",
+            "Seeing why small latency spikes snowball",
           ]}
-          tieIn={
-            <>
-              Instead of just reading about distributed systems, I wanted a sandbox where I could break
-              things safely and actually <em className="italic text-zinc-300">see</em> why best practices
-              exist.
-            </>
-          }
+          tieIn="A safe place to break things and internalize why common patterns exist."
         />
       ),
     },
     {
+      projectKey: "queue",
       title: "Async job queue",
       description:
         "Queue and worker simulation with retries, exponential backoff, and dead-letter handling.",
@@ -377,25 +728,19 @@ export default function Portfolio() {
       sourceHref: `${GITHUB_REPO}/tree/main/projects/async-job-queue`,
       why: (
         <WhySections
-          angle={
-            <>
-              I built this after realizing how many real-world systems rely on background
-              processing, but tutorials rarely go beyond simple examples. I wanted to understand what
-              happens <em className="italic text-zinc-300">after</em> you add a queue: retries, dead letters,
-              monitoring, and failure modes.
-            </>
-          }
-          listIntro="It's useful for:"
+          compact
+          angle="Most tutorials stop at a toy queue. I wanted retries, dead letters, and failure modes: the messy part after you enqueue."
+          listIntro="Covers:"
           bullets={[
-            "Learning how to design reliable background job systems",
-            "Exploring tradeoffs in retry strategies and backoff",
-            "Thinking in terms of eventual consistency instead of synchronous flows",
+            "Retry/backoff tradeoffs and eventual consistency",
+            "Designing jobs that survive partial failure",
           ]}
-          tieIn='This project reflects my shift from building "toy apps" to thinking like a backend engineer, designing systems that keep working even when parts fail.'
+          tieIn="Part of moving from demo apps to how real backends stay up when workers misbehave."
         />
       ),
     },
     {
+      projectKey: "librarian",
       title: "Personal librarian",
       description:
         "Local Ollama chat that recommends books from genres, comp titles, and mood, then enriches picks with Google Books covers, blurbs, and aggregate ratings.",
@@ -404,29 +749,25 @@ export default function Portfolio() {
       sourceHref: `${GITHUB_REPO}/tree/main/projects/book-librarian`,
       why: (
         <WhySections
+          compact
           angle={
             <>
-              I built this because I often struggle to decide what to read next. Recommendations are
-              everywhere, but they&apos;re rarely{" "}
-              <em className="italic text-zinc-300">personalized to my mood</em>. This tool lets me describe
-              what I feel like reading and get curated suggestions enriched with real-world metadata.
+              Picking what to read is hard when lists aren&apos;t tuned to{" "}
+              <em className="italic text-zinc-300">mood</em>. Local Ollama suggests titles; Google Books fills
+              in covers, blurbs, and links, with no cloud LLM required.
             </>
           }
-          listIntro="It's useful for:"
+          listIntro="Highlights:"
           bullets={[
-            'Turning vague preferences (“something thoughtful but not heavy”) into concrete recommendations',
-            "Combining LLM reasoning with structured data (Google Books, Goodreads)",
-            "Running locally, so I can experiment with AI without relying on cloud APIs",
+            "Vague prompts → concrete picks",
+            "Structured metadata on top of the model",
           ]}
-          tieIn={
-            <>
-              This is the most <span className="text-zinc-300">&quot;me&quot;</span> project. It solves a real habit in my life, and it let me explore how AI can feel genuinely helpful rather than gimmicky.
-            </>
-          }
+          tieIn="My most personal project: useful AI without the gimmick."
         />
       ),
     },
     {
+      projectKey: "interview",
       title: "Mock interview coach",
       description:
         "Hiring-manager practice for a chosen company and role: curated behavioral and technical prompts, or a dynamic session with your own Groq API key (free tier). Offline mode needs no backend.",
@@ -435,18 +776,19 @@ export default function Portfolio() {
       sourceHref: `${GITHUB_REPO}/tree/main/projects/mock-interview`,
       why: (
         <WhySections
-          angle="I built this to practice interviews in a way that feels realistic and repeatable. Preparing for interviews is stressful, and I wanted something that adapts to different companies and roles without needing another person."
-          listIntro="It's useful for:"
+          compact
+          angle="Interview prep is noisy and uneven. I wanted company- and role-themed prompts I could run anytime, offline or with a cheap API key."
+          listIntro="Use it to:"
           bullets={[
-            "Practicing behavioral and technical questions on demand",
-            "Simulating real interview pressure with structured prompts",
-            "Running offline or with your own API key, making it flexible and accessible",
+            "Drill behavioral and technical questions on demand",
+            "Stay static-host friendly (no backend required for offline)",
           ]}
-          tieIn="This project came directly from my own interview prep. It's something I wish I had earlier. It turns a stressful, inconsistent process into something I can iterate on and improve."
+          tieIn="I built it for my own prep; iteration beats one-off mock sessions."
         />
       ),
     },
     {
+      projectKey: "card-fit",
       title: "Card Fit",
       description:
         "CSV or PDF with in-browser parsing and edits, merchant overrides, fee and break-even hints, ranked cards. Web Worker analysis and JSON export.",
@@ -455,24 +797,24 @@ export default function Portfolio() {
       sourceHref: `${GITHUB_REPO}/tree/main/projects/card-fit`,
       why: (
         <WhySections
+          compact
           angle={
             <>
-              Ads quote great multipliers, not how much <em className="italic text-zinc-300">you</em> spend on groceries,
-              travel, or dining. Card Fit scores cards from your own export using rules you can read, so it stays a
-              spreadsheet-style comparison, not an opaque score.
+              Promos quote multipliers, not <em className="italic text-zinc-300">your</em> categories. Card Fit
+              ranks from your export with inspectable rules: spreadsheet logic, not a black box.
             </>
           }
-          listIntro="What I focused on:"
+          listIntro="Principles:"
           bullets={[
-            "Use files people already have (CSV or PDF), not bank linking",
-            "Show why a card ranks: categories, fees, caps, and assumptions",
-            "Run analysis in the browser unless a later feature clearly needs opt-in cloud",
+            "CSV/PDF in-browser, no bank linking",
+            "Explainable scores (fees, caps, assumptions)",
           ]}
-          tieIn="It pulls together what I like building in production: shaping messy exports into something reliable, keeping the logic explainable, and UX that has to earn trust when the inputs are personal."
+          tieIn="Trust matters when the inputs are your money."
         />
       ),
     },
     {
+      projectKey: "reward-optimizer",
       title: "Reward Optimizer",
       description:
         "Card Fit add-on: upload transactions or paste rows, pick the best card per category from fixed reward rates, see totals per card. Next.js API on Vercel; no accounts in MVP.",
@@ -481,165 +823,206 @@ export default function Portfolio() {
       sourceHref: `${GITHUB_REPO}/tree/main/projects/reward-optimizer`,
       why: (
         <WhySections
+          compact
           angle={
             <>
-              Card Fit ranks cards from your spending file; Reward Optimizer answers a narrower question:{" "}
-              <em className="italic text-zinc-300">for each purchase</em>, which card wins on that category?
-              It reuses the same mental model (rates × spend) in a transaction-first UI.
+              Card Fit ranks overall spend; this answers{" "}
+              <em className="italic text-zinc-300">per transaction</em>, which card wins that category: same
+              math, different UI.
             </>
           }
-          listIntro="Why a separate deploy:"
+          listIntro="Separate app because:"
           bullets={[
-            "The portfolio site on GitHub Pages is static; this app needs a host that runs Next.js serverless routes.",
-            "The live demo is on Vercel; you can override the link with VITE_REWARD_OPTIMIZER_DEMO if you change deployments.",
+            "GitHub Pages can’t run Next.js API routes",
+            "Demo lives on Vercel; URL overridable via env",
           ]}
-          tieIn="It is intentionally small: prove the scoring path end-to-end, then grow with auth and storage when the workflow deserves it."
+          tieIn="Small MVP: prove scoring end-to-end first."
         />
       ),
     },
   ];
 
-  return (
-    <div className="bg-site min-h-screen text-zinc-100">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(217,70,239,0.12),transparent)]" />
+  const deepLinkOnLoad = readProjectsDeepLink();
+  const [panel, setPanel] = useState(() => (deepLinkOnLoad.openProjects ? "projects" : null));
+  const [initialDeckKey] = useState(() => deepLinkOnLoad.deckKey);
+  const panelTitleId = useId();
 
-      <header className="sticky top-0 z-50 border-b border-white/5 bg-[#070708]/80 backdrop-blur-md">
-        <nav className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-          <a href="#" className="font-display text-lg font-bold tracking-tight text-white">
-            Sonali Shanbhag
-          </a>
-          <div className="flex max-w-[70%] flex-wrap items-center justify-end gap-x-3 gap-y-1 sm:max-w-none sm:gap-x-6">
-            <NavLink href="#about">About</NavLink>
-            <NavLink href="#experience">Experience</NavLink>
-            <NavLink href="#skills">Skills</NavLink>
-            <NavLink href="#projects">Projects</NavLink>
-            <NavLink href="#contact">Contact</NavLink>
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    if (p.get("open_projects") !== "1") return;
+    p.delete("open_projects");
+    p.delete("deck");
+    const rest = p.toString();
+    const url = `${window.location.pathname}${rest ? `?${rest}` : ""}${window.location.hash}`;
+    window.history.replaceState(null, "", url);
+  }, []);
+
+  const panelTitles = {
+    about: "About",
+    experience: "Experience",
+    skills: "Technical skills",
+    projects: "Selected work",
+    contact: "Let's connect",
+  };
+
+  return (
+    <div className="bg-site relative flex h-[100dvh] min-h-0 flex-col overflow-hidden text-zinc-100">
+      <div className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(217,70,239,0.12),transparent)]" />
+      <StarField />
+
+      <header className="relative z-40 border-b border-white/5 bg-[#070708]/70 backdrop-blur-md">
+        <nav
+          className="mx-auto flex w-full max-w-6xl items-center justify-center px-4 py-3 sm:px-8 sm:py-4"
+          aria-label="Site sections"
+        >
+          <div className="flex w-full flex-wrap items-center justify-center gap-x-6 gap-y-2 sm:flex-nowrap sm:justify-between sm:gap-x-4 md:gap-x-8 lg:gap-x-12">
+            <NavButton onClick={() => setPanel("about")}>About</NavButton>
+            <NavButton onClick={() => setPanel("experience")}>Experience</NavButton>
+            <NavButton onClick={() => setPanel("skills")}>Skills</NavButton>
+            <NavButton onClick={() => setPanel("projects")}>Projects</NavButton>
+            <NavButton onClick={() => setPanel("contact")}>Contact</NavButton>
           </div>
         </nav>
       </header>
 
-      <main>
-        {/* Hero */}
-        <section className="relative mx-auto max-w-5xl px-6 pb-20 pt-16 md:pb-28 md:pt-24">
-          <p className="mb-4 text-sm font-medium uppercase tracking-[0.2em] text-fuchsia-400/90">
-            Software Engineer · San Jose
-          </p>
-          <h1 className="font-display max-w-4xl text-4xl font-extrabold leading-[1.1] tracking-tight text-white md:text-6xl md:leading-[1.05]">
-            <span className="text-gradient">Full-stack & platform</span>
-            <br />
-            <span className="text-white">systems that hold up in production</span>
-          </h1>
-          <p className="mt-8 max-w-2xl text-lg leading-relaxed text-zinc-400">
-            Distributed systems, service orchestration, and data workflows. I debug cross-service
-            issues, ship scalable APIs, and care about reliability, scale, and performance.
-          </p>
-          <div className="mt-10 flex flex-wrap gap-4">
-            <a
-              href="#projects"
-              className="inline-flex items-center justify-center rounded-full bg-fuchsia-500 px-7 py-3.5 text-sm font-semibold text-white shadow-[0_0_40px_-8px_rgba(217,70,239,0.55)] transition hover:bg-fuchsia-400"
-            >
-              View projects
-            </a>
-            <a
-              href="#contact"
-              className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/5 px-7 py-3.5 text-sm font-medium text-zinc-200 backdrop-blur-sm transition hover:border-fuchsia-500/40 hover:bg-white/[0.08]"
-            >
-              Get in touch
-            </a>
-          </div>
-        </section>
-
-        <div className="glow-line mx-auto max-w-5xl opacity-60" />
-
-        {/* About */}
-        <section id="about" className="mx-auto max-w-5xl scroll-mt-24 px-6 py-20 md:py-28">
-          <SectionTitle>About</SectionTitle>
-          <div className="mt-10 grid gap-12 md:grid-cols-[minmax(0,280px)_1fr] md:items-start md:gap-16">
-            <div className="mx-auto w-full max-w-[280px] md:mx-0">
-              <div className="relative">
-                <div className="absolute -inset-1 rounded-3xl bg-gradient-to-br from-fuchsia-500/40 via-transparent to-violet-600/30 blur-sm" />
-                <img
-                  src={photo}
-                  alt="Sonali Shanbhag"
-                  className="relative aspect-[4/5] w-full rounded-3xl object-cover object-top shadow-2xl ring-1 ring-white/10"
-                />
-              </div>
-              <p className="mt-4 text-center text-xs text-zinc-500 md:text-left">
-                San Jose, California
-              </p>
+      <main className="relative z-[30] flex min-h-0 flex-1 flex-col">
+        <div className="relative min-h-0 flex-1">
+          <BubbleField onSelect={setPanel} openPanelId={panel} />
+          <div className="pointer-events-none absolute inset-0 z-20 flex flex-col items-center justify-center px-5 pt-12 pb-36 text-center sm:px-8 sm:pb-40 sm:pt-14 md:pb-44 md:pt-16 lg:pb-48">
+            <div className="pointer-events-auto max-w-xl md:max-w-4xl -translate-y-6 sm:-translate-y-8 md:-translate-y-10">
+            <h1 className="font-display text-3xl font-extrabold leading-[1.12] tracking-tight text-white sm:text-5xl sm:leading-[1.08]">
+              <span className="text-gradient">Hi, I&apos;m Sonali!</span>
+            </h1>
+            <p className="mt-5 text-base font-medium leading-relaxed text-zinc-200 sm:mt-6 sm:text-lg sm:leading-relaxed lg:whitespace-nowrap">
+              I build full-stack and platform systems that hold up under real-world pressure.
+            </p>
+            <p className="mt-4 text-sm leading-relaxed text-zinc-400 sm:mt-5 sm:text-base sm:leading-relaxed">
+              I&apos;m especially interested in the why behind what we build, designing reliable systems,
+              debugging complex issues, and making things work at scale.
+            </p>
+            <p className="mt-5 text-[11px] leading-snug text-zinc-500 sm:mt-6 sm:text-xs">
+              Tap any orb around the center to explore About, Experience, Skills, Projects, or Contact and
+              learn more.
+            </p>
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-3 sm:mt-6">
+              <button
+                type="button"
+                onClick={() => setPanel("projects")}
+                className="inline-flex items-center justify-center rounded-full bg-fuchsia-500 px-6 py-3 text-sm font-semibold text-white shadow-[0_0_40px_-8px_rgba(217,70,239,0.55)] transition hover:bg-fuchsia-400"
+              >
+                View projects
+              </button>
+              <button
+                type="button"
+                onClick={() => setPanel("contact")}
+                className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/5 px-6 py-3 text-sm font-medium text-zinc-200 backdrop-blur-sm transition hover:border-fuchsia-500/40 hover:bg-white/[0.08]"
+              >
+                Get in touch
+              </button>
             </div>
-            <div className="space-y-6">
-              <p className="text-lg leading-relaxed text-zinc-300">
-                I&apos;m a full-stack and platform-focused engineer with experience in distributed
-                systems, service orchestration, and data workflows. I&apos;m strongest when tracing
-                issues across services, shipping APIs that scale, and delivering systems that matter
-                in production.
-              </p>
-              <p className="leading-relaxed text-zinc-400">
-                I gravitate toward roles that emphasize design, reliability, scale, and performance,
-                and toward teams that treat observability and pragmatic tradeoffs as first-class.
-              </p>
-              <div>
-                <h3 className="font-display text-sm font-semibold uppercase tracking-wider text-fuchsia-400/90">
-                  Education
-                </h3>
-                <ul className="mt-4 space-y-4 border-l border-white/10 pl-5">
-                  {EDUCATION.map((e) => (
-                    <li key={e.school} className="relative">
-                      <span className="absolute -left-[21px] top-2 h-2 w-2 rounded-full bg-fuchsia-500/80 ring-4 ring-[#070708]" />
-                      <p className="font-medium text-white">{e.school}</p>
-                      <p className="text-sm text-zinc-400">{e.detail}</p>
-                      <p className="text-xs text-zinc-500">{e.range}</p>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <h3 className="font-display text-sm font-semibold uppercase tracking-wider text-fuchsia-400/90">
-                  Leadership & community
-                </h3>
-                <ul className="mt-3 flex flex-wrap gap-2">
-                  {LEADERSHIP.map((item) => (
-                    <li
-                      key={item}
-                      className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs text-zinc-300"
-                    >
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
             </div>
           </div>
-        </section>
+        </div>
+      </main>
 
-        {/* Experience */}
-        <section
-          id="experience"
-          className="border-y border-white/5 bg-black/20 py-20 md:py-28"
-        >
-          <div className="mx-auto max-w-5xl px-6">
-            <SectionTitle>Experience</SectionTitle>
-            <p className="mt-3 max-w-2xl text-zinc-400">
+      <footer className="relative z-40 shrink-0 border-t border-white/5 bg-[#070708]/60 py-2.5 text-center text-[10px] text-zinc-600 backdrop-blur-sm sm:py-3 sm:text-xs">
+        © {new Date().getFullYear()} Sonali Shanbhag
+      </footer>
+
+      <SectionDrawer
+        open={panel != null}
+        titleId={panelTitleId}
+        title={panel ? panelTitles[panel] : ""}
+        onClose={() => setPanel(null)}
+      >
+        {panel === "about" && (
+          <div className="text-left">
+            <p className="text-sm font-medium uppercase tracking-[0.2em] text-fuchsia-400/90">
+              Software Engineer · San Jose
+            </p>
+            <p className="mt-4 text-base leading-relaxed text-zinc-300">
+              I&apos;m passionate about learning new technologies. I&apos;m looking for opportunities in
+              user-focused technology where I can learn, work hard, have fun and make an impact through
+              design and programming.
+            </p>
+            <div className="mt-10 border-t border-white/10 pt-10">
+            <div className="grid gap-10 md:grid-cols-[minmax(0,220px)_1fr] md:items-start md:gap-12">
+              <div className="mx-auto w-full max-w-[220px] md:mx-0">
+                <div className="relative">
+                  <div className="absolute -inset-1 rounded-3xl bg-gradient-to-br from-fuchsia-500/40 via-transparent to-violet-600/30 blur-sm" />
+                  <img
+                    src={photo}
+                    alt="Sonali Shanbhag"
+                    className="relative aspect-[4/5] w-full rounded-3xl object-cover object-top shadow-2xl ring-1 ring-white/10"
+                  />
+                </div>
+              </div>
+              <div className="space-y-5">
+                <p className="text-base leading-relaxed text-zinc-300">
+                  I&apos;m a full-stack and platform-focused engineer with experience in distributed
+                  systems, service orchestration, and data workflows. I&apos;m strongest when tracing
+                  issues across services, shipping APIs that scale, and delivering systems that matter
+                  in production.
+                </p>
+                <p className="text-sm leading-relaxed text-zinc-400">
+                  I gravitate toward roles that emphasize design, reliability, scale, and performance,
+                  and toward teams that treat observability and pragmatic tradeoffs as first-class.
+                </p>
+                <div>
+                  <h3 className="font-display text-xs font-semibold uppercase tracking-wider text-fuchsia-400/90">
+                    Education
+                  </h3>
+                  <ul className="mt-3 space-y-3 border-l border-white/10 pl-4">
+                    {EDUCATION.map((e) => (
+                      <li key={e.school} className="relative">
+                        <span className="absolute -left-[17px] top-1.5 h-1.5 w-1.5 rounded-full bg-fuchsia-500/80 ring-2 ring-zinc-900" />
+                        <p className="font-medium text-white">{e.school}</p>
+                        <p className="text-sm text-zinc-400">{e.detail}</p>
+                        <p className="text-xs text-zinc-500">{e.range}</p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="font-display text-xs font-semibold uppercase tracking-wider text-fuchsia-400/90">
+                    Leadership & community
+                  </h3>
+                  <ul className="mt-2 flex flex-wrap gap-2">
+                    {LEADERSHIP.map((item) => (
+                      <li
+                        key={item}
+                        className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-zinc-300"
+                      >
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+            </div>
+          </div>
+        )}
+
+        {panel === "experience" && (
+          <div className="text-left">
+            <p className="text-sm text-zinc-400">
               Roles aligned with my resume (impact, stack, and scope).
             </p>
-
-            <div className="mt-14 space-y-14">
+            <div className="mt-8 space-y-12">
               {EXPERIENCE.map((job) => (
-                <article key={`${job.company}-${job.range}`} className="relative pl-0 md:pl-8">
+                <article key={`${job.company}-${job.range}`} className="relative pl-0 md:pl-6">
                   <div className="absolute left-0 top-2 hidden h-[calc(100%-0.5rem)] w-px bg-gradient-to-b from-fuchsia-500/50 to-transparent md:block" />
-                  <div className="mb-2 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:justify-between">
-                    <div>
-                      <h3 className="font-display text-xl font-bold text-white">
-                        {job.title}{" "}
-                        <span className="font-normal text-fuchsia-300/90">· {job.company}</span>
-                      </h3>
-                      <p className="text-sm text-zinc-500">
-                        {job.location} · {job.range}
-                      </p>
-                    </div>
+                  <div className="mb-2">
+                    <h3 className="font-display text-lg font-bold text-white">
+                      {job.title}{" "}
+                      <span className="font-normal text-fuchsia-300/90">· {job.company}</span>
+                    </h3>
+                    <p className="text-sm text-zinc-500">
+                      {job.location} · {job.range}
+                    </p>
                   </div>
-                  <ul className="mt-4 space-y-3 text-sm leading-relaxed text-zinc-400">
+                  <ul className="mt-3 space-y-2 text-sm leading-relaxed text-zinc-400">
                     {job.highlights.map((line) => (
                       <li key={line.slice(0, 48)} className="flex gap-3">
                         <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-fuchsia-500/70" />
@@ -650,13 +1033,12 @@ export default function Portfolio() {
                 </article>
               ))}
             </div>
-
-            <h3 className="font-display mt-20 text-lg font-bold text-white">Internships</h3>
-            <div className="mt-8 space-y-12">
+            <h3 className="font-display mt-14 text-base font-bold text-white">Internships</h3>
+            <div className="mt-6 space-y-10">
               {INTERNSHIPS.map((job) => (
-                <article key={`${job.company}-${job.range}`} className="relative pl-0 md:pl-8">
+                <article key={`${job.company}-${job.range}`} className="relative pl-0 md:pl-6">
                   <div className="mb-2">
-                    <h4 className="font-display text-lg font-semibold text-white">
+                    <h4 className="font-display text-base font-semibold text-white">
                       {job.title}{" "}
                       <span className="font-normal text-zinc-400">· {job.company}</span>
                     </h4>
@@ -664,7 +1046,7 @@ export default function Portfolio() {
                       {job.location} · {job.range}
                     </p>
                   </div>
-                  <ul className="mt-3 space-y-2 text-sm leading-relaxed text-zinc-400">
+                  <ul className="mt-2 space-y-2 text-sm leading-relaxed text-zinc-400">
                     {job.highlights.map((line) => (
                       <li key={line.slice(0, 40)} className="flex gap-3">
                         <span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-zinc-600" />
@@ -676,77 +1058,64 @@ export default function Portfolio() {
               ))}
             </div>
           </div>
-        </section>
+        )}
 
-        {/* Skills */}
-        <section id="skills" className="mx-auto max-w-5xl scroll-mt-24 px-6 py-20 md:py-28">
-          <SectionTitle>Technical skills</SectionTitle>
-          <p className="mt-3 max-w-2xl text-zinc-400">
-            Tools and languages I use regularly in production and on the path to shipping.
-          </p>
-          <div className="mt-10 flex flex-wrap gap-2">
-            {SKILLS.map((skill) => (
-              <span
-                key={skill}
-                className="rounded-full border border-fuchsia-500/20 bg-fuchsia-500/5 px-4 py-2 text-sm text-zinc-200 transition hover:border-fuchsia-400/40 hover:bg-fuchsia-500/10"
-              >
-                {skill}
-              </span>
-            ))}
-          </div>
-        </section>
-
-        {/* Projects */}
-        <section
-          id="projects"
-          className="border-t border-white/5 bg-black/15 py-20 md:py-28"
-        >
-          <div className="mx-auto max-w-5xl px-6">
-            <SectionTitle>Selected work</SectionTitle>
-            <p className="mt-3 max-w-2xl text-zinc-400">
-              Personal and conceptual projects that mirror how I think about systems.
+        {panel === "skills" && (
+          <div className="text-left">
+            <p className="text-sm text-zinc-400">
+              Tools and languages I use regularly in production and on the path to shipping.
             </p>
-
-            <div className="mt-12 grid gap-6 md:grid-cols-2">
-              {projects.map((p) => (
-                <ProjectCard key={p.title} {...p} />
+            <div className="mt-6 flex flex-wrap gap-2">
+              {SKILLS.map((skill) => (
+                <span
+                  key={skill}
+                  className="rounded-full border border-fuchsia-500/20 bg-fuchsia-500/5 px-3 py-1.5 text-sm text-zinc-200"
+                >
+                  {skill}
+                </span>
               ))}
             </div>
           </div>
-        </section>
+        )}
 
-        {/* Contact */}
-        <section id="contact" className="mx-auto max-w-5xl scroll-mt-24 px-6 py-24 text-center">
-          <SectionTitle>Let&apos;s connect</SectionTitle>
-          <p className="mx-auto mt-4 max-w-lg text-zinc-400">
-            Open to conversations about platform engineering, reliability, and high-impact product
-            work. San Jose, California.
-          </p>
-          <ConnectForm />
-          <div className="mt-12 flex justify-center gap-8 text-sm">
-            <a
-              href={GITHUB_REPO}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-zinc-400 underline-offset-4 transition hover:text-white hover:underline"
-            >
-              GitHub
-            </a>
-            <a
-              href={LINKEDIN_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-zinc-400 underline-offset-4 transition hover:text-white hover:underline"
-            >
-              LinkedIn
-            </a>
+        {panel === "projects" && (
+          <div className="text-left">
+            <p className="text-sm text-zinc-400">
+              Personal and conceptual projects that mirror how I think about systems. Use the arrows or
+              dots to change projects; tap <span className="text-zinc-300">Why?</span> on a card to flip it
+              and read the story on the back.
+            </p>
+            <ProjectsDeck projects={projects} initialDeckKey={initialDeckKey} />
           </div>
-        </section>
-      </main>
+        )}
 
-      <footer className="border-t border-white/5 py-8 text-center text-xs text-zinc-600">
-        © {new Date().getFullYear()} Sonali Shanbhag
-      </footer>
+        {panel === "contact" && (
+          <div className="text-center">
+            <p className="mx-auto max-w-lg text-sm text-zinc-400">
+              Open to conversations about platform engineering, reliability, and high-impact product work.
+            </p>
+            <ConnectForm />
+            <div className="mt-8 flex justify-center gap-8 text-sm">
+              <a
+                href={GITHUB_REPO}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-zinc-400 underline-offset-4 transition hover:text-white hover:underline"
+              >
+                GitHub
+              </a>
+              <a
+                href={LINKEDIN_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-zinc-400 underline-offset-4 transition hover:text-white hover:underline"
+              >
+                LinkedIn
+              </a>
+            </div>
+          </div>
+        )}
+      </SectionDrawer>
     </div>
   );
 }

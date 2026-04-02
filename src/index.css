@@ -48,3 +48,176 @@ body {
   background-clip: text;
   color: transparent;
 }
+
+/* Floating orbs — each bubble uses a different drift path + duration */
+@keyframes orbit-1 {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  25% {
+    transform: translate(28px, -22px) rotate(2deg);
+  }
+  50% {
+    transform: translate(-16px, 26px) rotate(-1deg);
+  }
+  75% {
+    transform: translate(20px, 14px) rotate(1deg);
+  }
+}
+
+@keyframes orbit-2 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(-32px, 18px) scale(1.04);
+  }
+  66% {
+    transform: translate(24px, -28px) scale(0.96);
+  }
+}
+
+@keyframes orbit-3 {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  20% {
+    transform: translate(18px, 32px);
+  }
+  40% {
+    transform: translate(-26px, 8px);
+  }
+  60% {
+    transform: translate(12px, -24px);
+  }
+  80% {
+    transform: translate(22px, -6px);
+  }
+}
+
+@keyframes orbit-4 {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-22px, -34px);
+  }
+}
+
+@keyframes orbit-5 {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(36px, 20px) rotate(-3deg);
+  }
+}
+
+@keyframes orbit-6 {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  16% {
+    transform: translate(-20px, -18px);
+  }
+  33% {
+    transform: translate(14px, -30px);
+  }
+  50% {
+    transform: translate(30px, 6px);
+  }
+  66% {
+    transform: translate(-8px, 24px);
+  }
+  83% {
+    transform: translate(-24px, 10px);
+  }
+}
+
+@keyframes halo-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(1.08);
+  }
+}
+
+.bubble-orbit-1 {
+  animation: orbit-1 19s ease-in-out infinite;
+}
+.bubble-orbit-2 {
+  animation: orbit-2 23s ease-in-out infinite;
+  animation-delay: -4s;
+}
+.bubble-orbit-3 {
+  animation: orbit-3 21s ease-in-out infinite;
+  animation-delay: -2s;
+}
+.bubble-orbit-4 {
+  animation: orbit-4 17s ease-in-out infinite;
+  animation-delay: -1s;
+}
+.bubble-orbit-5 {
+  animation: orbit-5 25s ease-in-out infinite;
+  animation-delay: -7s;
+}
+.bubble-orbit-6 {
+  animation: orbit-6 22s ease-in-out infinite;
+  animation-delay: -5s;
+}
+
+.bubble-halo {
+  animation: halo-pulse 4s ease-in-out infinite;
+}
+
+/* Night-sky stars behind the main stage */
+@keyframes star-twinkle {
+  0%,
+  100% {
+    opacity: 0.12;
+    transform: scale(0.75);
+  }
+  40% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+}
+
+.star-dot {
+  animation-name: star-twinkle;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  will-change: opacity, transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bubble-orbit-1,
+  .bubble-orbit-2,
+  .bubble-orbit-3,
+  .bubble-orbit-4,
+  .bubble-orbit-5,
+  .bubble-orbit-6,
+  .bubble-halo {
+    animation: none;
+  }
+
+  .star-dot {
+    animation: none;
+    opacity: 0.35;
+    transform: none;
+  }
+}

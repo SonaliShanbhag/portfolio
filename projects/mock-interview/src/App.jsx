@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo, useState } from "react";
+import PortfolioBackBar from "../../shared/PortfolioBackBar.jsx";
 import { buildQuestionQueue, LEVELS, resolveCompany } from "./data/companies.js";
 import { buildFollowUp, buildOpening } from "./lib/offlineInterview.js";
 import { computeOfflineFinal, offlineFeedback } from "./lib/feedback.js";
@@ -350,6 +351,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#070708] text-zinc-100">
+      <PortfolioBackBar />
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(16,185,129,0.08),transparent)]" />
 
       <header className="relative border-b border-white/5 bg-[#070708]/90 backdrop-blur-md">

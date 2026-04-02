@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import PortfolioBackBar from "../../shared/PortfolioBackBar.jsx";
 import Papa from "papaparse";
 import AnalysisWorker from "./analysis.worker.js?worker";
 import { detectColumns, parseCsvText } from "./lib/csvParse.js";
@@ -1005,6 +1006,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#050506]">
+      <PortfolioBackBar />
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(52,211,153,0.08),transparent)]" />
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_60%_40%_at_80%_20%,rgba(59,130,246,0.06),transparent)]" />
 
