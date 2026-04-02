@@ -106,6 +106,12 @@ const LEADERSHIP = [
 const GITHUB_REPO =
   import.meta.env.VITE_GITHUB_REPO ?? "https://github.com/SonaliShanbhag/portfolio";
 
+const LINKEDIN_URL = "https://www.linkedin.com/in/sonali-shanbhag-b73052180/";
+
+/** Used only for mailto: (not shown on the page). Override with `VITE_CONTACT_EMAIL` in `.env` if needed. */
+const CONTACT_EMAIL =
+  import.meta.env.VITE_CONTACT_EMAIL?.trim() || "sendsonali@gmail.com";
+
 /** Deployed Reward Optimizer on Vercel. Override with `VITE_REWARD_OPTIMIZER_DEMO` in `.env` if the URL changes. */
 const REWARD_OPTIMIZER_DEMO =
   import.meta.env.VITE_REWARD_OPTIMIZER_DEMO?.trim() ||
@@ -242,6 +248,87 @@ function SectionTitle({ children, id }) {
     >
       {children}
     </h2>
+  );
+}
+
+function ConnectForm() {
+  const [name, setName] = useState("");
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const trimmedName = name.trim();
+    const trimmedSubject = subject.trim();
+    const trimmedMessage = message.trim();
+    const mailSubject = encodeURIComponent(
+      trimmedSubject ? `[Portfolio] ${trimmedSubject}` : "Portfolio — message from site"
+    );
+    const mailBody = encodeURIComponent(
+      `${trimmedName ? `Name: ${trimmedName}\n\n` : ""}${trimmedMessage}`
+    );
+    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${mailSubject}&body=${mailBody}`;
+  };
+
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className="mx-auto mt-10 w-full max-w-md space-y-4 text-left"
+    >
+      <div>
+        <label htmlFor="connect-name" className="mb-1.5 block text-sm font-medium text-zinc-400">
+          Name
+        </label>
+        <input
+          id="connect-name"
+          name="name"
+          type="text"
+          autoComplete="name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600 outline-none ring-fuchsia-500/0 transition focus:border-fuchsia-500/40 focus:ring-2 focus:ring-fuchsia-500/30"
+          placeholder="Your name"
+        />
+      </div>
+      <div>
+        <label htmlFor="connect-subject" className="mb-1.5 block text-sm font-medium text-zinc-400">
+          Subject
+        </label>
+        <input
+          id="connect-subject"
+          name="subject"
+          type="text"
+          value={subject}
+          onChange={(e) => setSubject(e.target.value)}
+          className="w-full rounded-lg border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600 outline-none transition focus:border-fuchsia-500/40 focus:ring-2 focus:ring-fuchsia-500/30"
+          placeholder="What is this about?"
+        />
+      </div>
+      <div>
+        <label htmlFor="connect-message" className="mb-1.5 block text-sm font-medium text-zinc-400">
+          Message
+        </label>
+        <textarea
+          id="connect-message"
+          name="message"
+          rows={5}
+          required
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          className="w-full resize-y rounded-lg border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600 outline-none transition focus:border-fuchsia-500/40 focus:ring-2 focus:ring-fuchsia-500/30"
+          placeholder="Your message…"
+        />
+      </div>
+      <button
+        type="submit"
+        className="w-full rounded-lg bg-fuchsia-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-fuchsia-500"
+      >
+        Open in email app
+      </button>
+      <p className="text-center text-xs text-zinc-500">
+        Opens your mail app with a draft to send. Your address stays private until you hit send.
+      </p>
+    </form>
   );
 }
 
@@ -633,16 +720,10 @@ export default function Portfolio() {
           <SectionTitle>Let&apos;s connect</SectionTitle>
           <p className="mx-auto mt-4 max-w-lg text-zinc-400">
             Open to conversations about platform engineering, reliability, and high-impact product
-            work.
+            work. San Jose, California.
           </p>
-          <a
-            href="mailto:sendsonali@gmail.com"
-            className="mt-8 inline-block font-display text-xl font-semibold text-fuchsia-300 transition hover:text-fuchsia-200 md:text-2xl"
-          >
-            sendsonali@gmail.com
-          </a>
-          <p className="mt-2 text-sm text-zinc-500">408-429-3421 · San Jose, California</p>
-          <div className="mt-10 flex justify-center gap-8 text-sm">
+          <ConnectForm />
+          <div className="mt-12 flex justify-center gap-8 text-sm">
             <a
               href={GITHUB_REPO}
               target="_blank"
@@ -651,7 +732,12 @@ export default function Portfolio() {
             >
               GitHub
             </a>
-            <a href="#" className="text-zinc-400 underline-offset-4 transition hover:text-white hover:underline">
+            <a
+              href={LINKEDIN_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-zinc-400 underline-offset-4 transition hover:text-white hover:underline"
+            >
               LinkedIn
             </a>
           </div>
