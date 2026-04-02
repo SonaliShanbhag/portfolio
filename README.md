@@ -61,6 +61,8 @@ npm run preview
 
 Then open `/simulator/`, `/queue/`, `/librarian/`, `/interview/`, and `/card-fit/` from the portfolio home page.
 
+Asset URLs are driven by **`VITE_PAGES_BASE`** (see `scripts/vite-pages-base.js`). For a **root** deploy (e.g. `https://yoursite.com/` or `https://<user>.github.io/`), leave it unset or set it to `/` — demos use `/simulator/`, `/queue/`, etc. For **`https://<user>.github.io/<repo>/`**, set **`VITE_PAGES_BASE=/<repo>/`** (trailing slash) before `npm run build:all` so assets resolve under `/repo/simulator/`, etc.
+
 ## GitHub Pages
 
 1. Create a repository on GitHub and push this folder (initialize git first if needed).
@@ -69,9 +71,9 @@ Then open `/simulator/`, `/queue/`, `/librarian/`, `/interview/`, and `/card-fit
 
 The workflow sets `VITE_GITHUB_REPO` to `https://github.com/<owner>/<repo>` automatically so demo cards link to the correct source tree.
 
-Optional: add a repository **Actions variable** named `REWARD_OPTIMIZER_DEMO` if you need a different URL than the default. The build passes it through as `VITE_REWARD_OPTIMIZER_DEMO`. The portfolio code defaults **Open demo** to the live Vercel app unless you override. For local dev, set `VITE_REWARD_OPTIMIZER_DEMO` in `.env` (see `.env.example`).
+**`VITE_PAGES_BASE` (Actions variable):** The deploy workflow sets this automatically: **`/`** for a `<owner>.github.io` user site repo, otherwise **`/<repository.name>/`** for project Pages. If you use a **custom domain at the site root** while the repo is **not** `<owner>.github.io`, GitHub still publishes under `/<repo>/` in the URL sense for asset resolution — but your domain often maps to the **root** of `dist/`. In that common case, add a repository **Actions variable** **`VITE_PAGES_BASE`** with value **`/`** so builds match `https://yourdomain.com/simulator/` instead of requesting `/portfolio/simulator/` (which 404s and shows a blank demo).
 
-If your site URL is `https://<user>.github.io/<repo>/`, relative links (`./simulator/`, `./queue/`, `./librarian/`) match that layout.
+Optional: add **`REWARD_OPTIMIZER_DEMO`** if you need a different URL than the default. The build passes it as `VITE_REWARD_OPTIMIZER_DEMO`. For local dev, set it in `.env` (see `.env.example`).
 
 **Personal librarian demo:** GitHub Pages only hosts static files. The app talks to **Ollama on your machine** (`127.0.0.1:11434` by default). Visitors who only open the public URL will not have your Ollama running; for a live chat demo, run Ollama locally and open the site (or record a short video for reviewers). Do not expose Ollama to the public internet without authentication.
 

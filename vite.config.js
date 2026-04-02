@@ -1,9 +1,10 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { viteMainBase } from "./scripts/vite-pages-base.js";
 
 export default defineConfig(({ command }) => ({
   plugins: [react()],
-  base: command === "build" ? "./" : "/",
+  base: viteMainBase(command),
   server: {
     port: 5173,
     proxy: {

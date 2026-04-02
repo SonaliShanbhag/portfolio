@@ -122,7 +122,7 @@ function SectionDrawer({ open, titleId, title, children, onClose }) {
         aria-label="Close"
         onClick={onClose}
       />
-      <div className="relative z-10 max-h-[min(92vh,44rem)] w-full max-w-3xl overflow-y-auto rounded-2xl border border-white/10 bg-zinc-900/95 p-6 shadow-2xl shadow-black/30 ring-1 ring-white/[0.06] sm:p-8">
+      <div className="relative z-10 max-h-[min(96dvh,44rem)] w-full max-w-3xl overflow-y-auto overscroll-contain rounded-2xl border border-white/10 bg-zinc-900/95 p-4 shadow-2xl shadow-black/30 ring-1 ring-white/[0.06] sm:max-h-[min(92vh,44rem)] sm:p-8">
         <div className="flex items-start justify-between gap-4">
           <h2
             id={titleId}
@@ -139,7 +139,7 @@ function SectionDrawer({ open, titleId, title, children, onClose }) {
             <span aria-hidden>×</span>
           </button>
         </div>
-        <div className="mt-6">{children}</div>
+        <div className="mt-4 sm:mt-6">{children}</div>
       </div>
     </div>
   );
@@ -149,7 +149,7 @@ function BubbleField({ onSelect, openPanelId }) {
   return (
     <nav
       aria-label="Explore sections"
-      className="pointer-events-none absolute inset-0 z-[35] grid h-full w-full grid-cols-3 grid-rows-2 gap-x-2 gap-y-2 overflow-visible px-2 py-2 sm:gap-x-4 sm:gap-y-4 sm:px-4 sm:py-3"
+      className="pointer-events-none absolute inset-0 z-[35] grid h-full w-full grid-cols-3 grid-rows-2 gap-x-1 gap-y-5 overflow-visible px-2 pb-2 pt-1 min-[400px]:gap-x-2 min-[400px]:gap-y-4 sm:gap-x-4 sm:gap-y-4 sm:px-4 sm:py-3"
       style={{ gridTemplateAreas: BUBBLE_GRID_TEMPLATE }}
     >
       {BUBBLE_SECTIONS.map((s) => (
@@ -160,7 +160,7 @@ function BubbleField({ onSelect, openPanelId }) {
         >
           <div className="relative">
             <div
-              className="bubble-halo pointer-events-none absolute -inset-8 rounded-full bg-gradient-to-br from-fuchsia-500/35 to-violet-600/20 blur-2xl"
+              className="bubble-halo pointer-events-none absolute max-sm:-inset-3 max-sm:blur-xl sm:-inset-6 md:-inset-8 rounded-full bg-gradient-to-br from-fuchsia-500/35 to-violet-600/20 blur-2xl"
               aria-hidden
             />
             <button
@@ -169,14 +169,14 @@ function BubbleField({ onSelect, openPanelId }) {
               aria-label={`Open ${s.label}`}
               aria-pressed={openPanelId === s.id}
               className={[
-                "pointer-events-auto relative flex h-[6.25rem] w-[6.25rem] cursor-pointer touch-manipulation items-center justify-center rounded-full border px-2 py-2 text-center shadow-lg transition sm:h-[7.25rem] sm:w-[7.25rem] md:h-[8rem] md:w-[8rem] lg:h-[8.75rem] lg:w-[8.75rem]",
+                "pointer-events-auto relative flex h-[4.25rem] w-[4.25rem] cursor-pointer touch-manipulation items-center justify-center rounded-full border px-1.5 py-1.5 text-center shadow-lg transition min-[400px]:h-[5.25rem] min-[400px]:w-[5.25rem] min-[400px]:px-2 min-[400px]:py-2 sm:h-[6.25rem] sm:w-[6.25rem] md:h-[7.5rem] md:w-[7.5rem] lg:h-[8.25rem] lg:w-[8.25rem]",
                 "active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-fuchsia-400",
                 openPanelId === s.id
                   ? "border-fuchsia-400/80 bg-gradient-to-br from-fuchsia-500/55 to-violet-600/50 text-white shadow-[0_0_36px_-4px_rgba(217,70,239,0.7)] ring-2 ring-fuchsia-400/50"
                   : "border-white/25 bg-gradient-to-br from-white/18 to-white/[0.06] text-zinc-50 backdrop-blur-md hover:border-fuchsia-400/50 hover:from-fuchsia-500/40 hover:to-violet-600/35 hover:shadow-[0_0_28px_-6px_rgba(217,70,239,0.55)]",
               ].join(" ")}
             >
-              <span className="font-display text-[10px] font-bold leading-tight tracking-tight text-balance sm:text-[11px] md:text-xs lg:text-[13px]">
+              <span className="font-display text-[9px] font-bold leading-tight tracking-tight text-balance min-[400px]:text-[10px] sm:text-[11px] md:text-xs lg:text-[13px]">
                 {s.label}
               </span>
             </button>
@@ -373,7 +373,7 @@ function ProjectCard({
       className="w-full [perspective:1200px]"
       data-why-expanded={whyOpen ? "" : undefined}
     >
-      <div className="relative min-h-[min(68vh,26rem)] w-full sm:min-h-[min(72vh,28rem)]">
+      <div className="relative w-full max-md:h-[min(52dvh,20rem)] md:min-h-[min(64vh,24rem)] lg:min-h-[min(68vh,26rem)] xl:min-h-[min(72vh,28rem)]">
         <article
           className={[
             "relative h-full min-h-[inherit] w-full transition-transform duration-700 ease-out motion-reduce:duration-0 [transform-style:preserve-3d]",
@@ -381,9 +381,9 @@ function ProjectCard({
           ].join(" ")}
           aria-label={whyOpen ? `${title}: why I built this` : title}
         >
-          {/* Front */}
+          {/* Front — scroll inside on small screens so actions stay reachable */}
           <div
-            className="group/front absolute inset-0 flex flex-col overflow-hidden rounded-3xl border border-white/[0.14] bg-gradient-to-br from-zinc-900/95 via-zinc-900/90 to-fuchsia-950/35 p-6 shadow-[0_24px_60px_-28px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.04)_inset] [backface-visibility:hidden] [transform:rotateY(0deg)] transition-[border-color,box-shadow] duration-300 hover:border-fuchsia-400/35 hover:shadow-[0_28px_70px_-24px_rgba(168,85,247,0.22),0_0_0_1px_rgba(217,70,239,0.12)_inset] sm:p-7"
+            className="group/front absolute inset-0 flex flex-col overflow-y-auto overflow-x-hidden rounded-3xl border border-white/[0.14] bg-gradient-to-br from-zinc-900/95 via-zinc-900/90 to-fuchsia-950/35 p-4 shadow-[0_24px_60px_-28px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.04)_inset] [backface-visibility:hidden] [transform:rotateY(0deg)] transition-[border-color,box-shadow] duration-300 [scrollbar-gutter:stable] hover:border-fuchsia-400/35 hover:shadow-[0_28px_70px_-24px_rgba(168,85,247,0.22),0_0_0_1px_rgba(217,70,239,0.12)_inset] sm:p-6 md:p-7"
             aria-hidden={whyOpen}
           >
             <div
@@ -399,13 +399,13 @@ function ProjectCard({
                 className="h-1 w-14 rounded-full bg-gradient-to-r from-fuchsia-400 to-violet-500 shadow-[0_0_20px_rgba(217,70,239,0.45)] sm:w-16"
                 aria-hidden
               />
-              <h3 className="font-display mt-4 text-xl font-extrabold leading-[1.15] tracking-tight text-white sm:mt-5 sm:text-2xl">
+              <h3 className="font-display mt-3 text-lg font-extrabold leading-[1.15] tracking-tight text-white sm:mt-4 sm:text-xl md:mt-5 md:text-2xl">
                 {title}
               </h3>
-              <p className="mt-3 flex-1 text-base leading-relaxed text-zinc-300 sm:text-lg sm:leading-relaxed">
+              <p className="mt-2 flex-1 text-sm leading-relaxed text-zinc-300 sm:mt-3 sm:text-base md:text-lg md:leading-relaxed">
                 {description}
               </p>
-              <ul className="mt-4 list-none space-y-2.5 text-base leading-snug text-zinc-100 sm:space-y-3 sm:text-[17px] sm:leading-snug">
+              <ul className="mt-3 list-none space-y-2 text-sm leading-snug text-zinc-100 sm:mt-4 sm:space-y-2.5 sm:text-base md:space-y-3 md:text-[17px] md:leading-snug">
                 {bullets.map((b) => (
                   <li key={b} className="relative pl-5 before:absolute before:left-0 before:top-[0.55em] before:h-1.5 before:w-1.5 before:rounded-full before:bg-gradient-to-br before:from-fuchsia-400 before:to-violet-500 before:shadow-[0_0_8px_rgba(217,70,239,0.5)]">
                     {b}
@@ -413,14 +413,14 @@ function ProjectCard({
                 ))}
               </ul>
             </div>
-            <div className="relative mt-5 flex flex-wrap gap-2.5 sm:mt-6">
+            <div className="relative mt-4 flex flex-wrap gap-2 sm:mt-5 sm:gap-2.5 md:mt-6">
               {demoHref ? (
                 <a
                   href={demoHref}
                   {...(/^https?:\/\//i.test(demoHref)
                     ? { target: "_blank", rel: "noopener noreferrer" }
                     : {})}
-                  className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-fuchsia-600 to-fuchsia-500 px-5 py-2.5 text-base font-semibold text-white shadow-[0_8px_28px_-8px_rgba(217,70,239,0.55)] transition hover:from-fuchsia-500 hover:to-fuchsia-400 hover:shadow-[0_12px_32px_-6px_rgba(217,70,239,0.45)]"
+                  className="inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-fuchsia-600 to-fuchsia-500 px-4 py-2 text-sm font-semibold text-white shadow-[0_8px_28px_-8px_rgba(217,70,239,0.55)] transition hover:from-fuchsia-500 hover:to-fuchsia-400 hover:shadow-[0_12px_32px_-6px_rgba(217,70,239,0.45)] sm:px-5 sm:py-2.5 sm:text-base"
                 >
                   Open demo
                 </a>
@@ -429,14 +429,14 @@ function ProjectCard({
                 href={sourceHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/[0.06] px-5 py-2.5 text-base font-medium text-zinc-100 backdrop-blur-sm transition hover:border-fuchsia-400/45 hover:bg-white/[0.1] hover:text-white"
+                className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/[0.06] px-4 py-2 text-sm font-medium text-zinc-100 backdrop-blur-sm transition hover:border-fuchsia-400/45 hover:bg-white/[0.1] hover:text-white sm:px-5 sm:py-2.5 sm:text-base"
               >
                 View source
               </a>
               <button
                 type="button"
                 onClick={() => setWhyOpen(true)}
-                className="inline-flex items-center justify-center rounded-xl border border-fuchsia-400/35 bg-fuchsia-500/10 px-5 py-2.5 text-base font-semibold text-fuchsia-100 transition hover:border-fuchsia-300/50 hover:bg-fuchsia-500/[0.18] hover:text-white"
+                className="inline-flex items-center justify-center rounded-xl border border-fuchsia-400/35 bg-fuchsia-500/10 px-4 py-2 text-sm font-semibold text-fuchsia-100 transition hover:border-fuchsia-300/50 hover:bg-fuchsia-500/[0.18] hover:text-white sm:px-5 sm:py-2.5 sm:text-base"
               >
                 Why?
               </button>
@@ -520,8 +520,8 @@ function ProjectsDeck({ projects, initialDeckKey }) {
   };
 
   return (
-    <div className="mt-6">
-      <div className="flex items-stretch gap-2 sm:gap-3">
+    <div className="mt-4 sm:mt-6">
+      <div className="flex items-stretch gap-1.5 sm:gap-3">
         <button
           type="button"
           onClick={() => go(-1)}
@@ -1080,7 +1080,7 @@ export default function Portfolio() {
 
         {panel === "projects" && (
           <div className="text-left">
-            <p className="text-sm text-zinc-400">
+            <p className="text-xs leading-relaxed text-zinc-400 sm:text-sm">
               Personal and conceptual projects that mirror how I think about systems. Use the arrows or
               dots to change projects; tap <span className="text-zinc-300">Why?</span> on a card to flip it
               and read the story on the back.

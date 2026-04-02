@@ -204,6 +204,23 @@ body {
   will-change: opacity, transform;
 }
 
+/* Narrow viewports: stop drift so orbs don’t overlap; halos stay calmer too. */
+@media (max-width: 639px) {
+  .bubble-orbit-1,
+  .bubble-orbit-2,
+  .bubble-orbit-3,
+  .bubble-orbit-4,
+  .bubble-orbit-5,
+  .bubble-orbit-6 {
+    animation: none !important;
+  }
+
+  .bubble-halo {
+    animation: none;
+    opacity: 0.45;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .bubble-orbit-1,
   .bubble-orbit-2,

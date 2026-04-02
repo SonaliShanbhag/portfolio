@@ -27,6 +27,21 @@ jobs:
         run: npm ci
       - name: Install project dependencies
         run: npm ci --prefix projects/distributed-simulator && npm ci --prefix projects/async-job-queue && npm ci --prefix projects/book-librarian && npm ci --prefix projects/mock-interview && npm ci --prefix projects/card-fit
+      - name: Set VITE_PAGES_BASE for GitHub Pages
+        env:
+          OVERRIDE: ${{ vars.VITE_PAGES_BASE }}
+        run: |
+          REPO_NAME="${{ github.event.repository.name }}"
+          OWNER="${{ github.repository_owner }}"
+          if [ -n "$OVERRIDE" ]; then
+            BASE="$OVERRIDE"
+          elif [ "$REPO_NAME" = "$OWNER.github.io" ]; then
+            BASE="/"
+          else
+            BASE="/$REPO_NAME/"
+          fi
+          echo "VITE_PAGES_BASE=$BASE" >> "$GITHUB_ENV"
+          echo "Using VITE_PAGES_BASE=$BASE"
       - name: Build site and demos
         env:
           VITE_GITHUB_REPO: https://github.com/${{ github.repository }}
