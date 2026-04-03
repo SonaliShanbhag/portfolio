@@ -53,13 +53,14 @@ Builds the main site and copies the demos into `dist/simulator`, `dist/queue`, `
 npm run build:all
 ```
 
-Preview the combined output:
+Preview the combined output (serves **`dist/`** at [http://localhost:4173](http://localhost:4173)):
 
 ```bash
+npm run build:all
 npm run preview
 ```
 
-Then open `/simulator/`, `/queue/`, `/librarian/`, `/interview/`, and `/card-fit/` from the portfolio home page.
+Then open `/simulator/`, `/queue/`, etc. **Do not** use “Live Server” on `dist/simulator/` alone: scripts load from `/simulator/assets/…`, so the server root must be **`dist/`** (same as GitHub Pages). Alternatively: `npx serve dist`.
 
 Asset URLs are driven by **`VITE_PAGES_BASE`** (see `scripts/vite-pages-base.js`). For a **root** deploy (e.g. `https://yoursite.com/` or `https://<user>.github.io/`), leave it unset or set it to `/` — demos use `/simulator/`, `/queue/`, etc. For **`https://<user>.github.io/<repo>/`**, set **`VITE_PAGES_BASE=/<repo>/`** (trailing slash) before `npm run build:all` so assets resolve under `/repo/simulator/`, etc.
 

@@ -35,4 +35,9 @@ export default defineConfig(({ command }) => ({
       },
     },
   },
+  // Preview serves `dist/` as static files; do not inherit dev `proxy` (would 502 to dead :5174–5178).
+  preview: {
+    port: 4173,
+    proxy: {},
+  },
 }));
