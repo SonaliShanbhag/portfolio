@@ -80,7 +80,7 @@ Optional: add **`REWARD_OPTIMIZER_DEMO`** if you need a different URL than the d
 
 **Personal librarian demo:** GitHub Pages only hosts static files. The app talks to **Ollama on your machine** (`127.0.0.1:11434` by default). Visitors who only open the public URL will not have your Ollama running; for a live chat demo, run Ollama locally and open the site (or record a short video for reviewers). Do not expose Ollama to the public internet without authentication.
 
-**Blank demo but title loads:** In DevTools → **Network**, confirm the main `.js` for that demo returns **200** (path is usually `…/simulator/assets/…` on the live site). If it’s **404**, the server root doesn’t match how you’re opening the app (see preview notes above). If it’s **200**, check **Console** for errors; on **Cloudflare**, disable **Rocket Loader** (it can break `type="module"` scripts).
+**Blank demo but title loads:** In DevTools → **Network**, confirm the main `.js` for that demo returns **200** (path is usually `…/simulator/assets/…` on the live site). If it’s **404**, the server root doesn’t match how you’re opening the app (see preview notes above). If it’s **200**, check **Console** for errors; on **Cloudflare**, disable **Rocket Loader** (it can break `type="module"` scripts). **`Cannot read properties of null (reading 'useState')`** means two copies of React were bundled (shared `PortfolioBackBar` vs the app); demo Vite configs use **`resolve.dedupe: ['react', 'react-dom']`** to fix that—rebuild and redeploy.
 
 ## Repository layout
 

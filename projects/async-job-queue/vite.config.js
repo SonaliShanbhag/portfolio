@@ -5,5 +5,6 @@ import { viteDemoBase } from "../../scripts/vite-pages-base.js";
 export default defineConfig(({ command }) => ({
   plugins: [react()],
   base: viteDemoBase("queue", command),
+  resolve: { dedupe: ["react", "react-dom"] },
   server: { port: 5175 },
 }));
