@@ -157,14 +157,14 @@ body {
   }
 }
 
-/* Orbits around hero: phone keeps the upper area empty; bottom rows use 6 cols so About & Skills sit
-   as a centered pair (2 in the middle), then Experience / Projects / Contact each span 2 cols (3 across). */
+/* Orbits around hero: phone uses 8 cols — two empty tracks between About & Skills (no overlap);
+   bottom row 2+4+2 so each top orb sits roughly above the pair of bottom orbs beside center. */
 .bubble-field-nav {
   grid-template-rows: minmax(0, 1fr) auto auto;
   grid-template-areas:
-    ". . . . . ."
-    ". . about skills . ."
-    "experience experience projects projects contact contact";
+    ". . . . . . . ."
+    ". . about . . skills . ."
+    "experience experience projects projects projects projects contact contact";
 }
 
 @media (min-width: 640px) {
