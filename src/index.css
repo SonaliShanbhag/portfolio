@@ -152,6 +152,25 @@ body {
   }
 }
 
+/* Orbits around hero: phone puts Experience/Projects/Contact on top and About/Skills on the bottom
+   so top corners don’t cover the headline; desktop keeps About & Skills upper corners. */
+.bubble-field-nav {
+  grid-template-rows: auto minmax(2.75rem, 1fr) auto;
+  grid-template-areas:
+    "experience projects contact"
+    ". . ."
+    "about . skills";
+}
+
+@media (min-width: 640px) {
+  .bubble-field-nav {
+    grid-template-rows: 1fr 1fr;
+    grid-template-areas:
+      "about . skills"
+      "experience projects contact";
+  }
+}
+
 .bubble-orbit-1 {
   animation: orbit-1 19s ease-in-out infinite;
 }

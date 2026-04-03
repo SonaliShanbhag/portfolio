@@ -13,8 +13,6 @@ const BUBBLE_SECTIONS = [
   { id: "contact", label: "Contact", orbit: "bubble-orbit-5", area: "contact" },
 ];
 
-const BUBBLE_GRID_TEMPLATE = '"about . skills" "experience projects contact"';
-
 /** Append ?deck= so embedded demos can link back to the right project card. */
 function withDeckQuery(href, projectKey) {
   if (!href || !projectKey) return href;
@@ -149,8 +147,7 @@ function BubbleField({ onSelect, openPanelId }) {
   return (
     <nav
       aria-label="Explore sections"
-      className="pointer-events-none absolute inset-0 z-[35] grid h-full w-full grid-cols-3 grid-rows-2 gap-x-1 gap-y-5 overflow-visible px-2 pb-2 pt-1 min-[400px]:gap-x-2 min-[400px]:gap-y-4 sm:gap-x-4 sm:gap-y-4 sm:px-4 sm:py-3"
-      style={{ gridTemplateAreas: BUBBLE_GRID_TEMPLATE }}
+      className="bubble-field-nav pointer-events-none absolute inset-0 z-[35] grid h-full w-full grid-cols-3 overflow-visible px-2 pb-2 pt-1 gap-x-1 gap-y-3 min-[400px]:gap-x-2 min-[400px]:gap-y-3 sm:gap-x-4 sm:gap-y-4 sm:px-4 sm:py-3"
     >
       {BUBBLE_SECTIONS.map((s) => (
         <div
@@ -901,8 +898,14 @@ export default function Portfolio() {
               debugging complex issues, and making things work at scale.
             </p>
             <p className="mt-5 text-[11px] leading-snug text-zinc-500 sm:mt-6 sm:text-xs">
-              Tap any orb around the center to explore About, Experience, Skills, Projects, or Contact and
-              learn more.
+              <span className="sm:hidden">
+                Tap the orbs along the top or bottom, or use the menu above, to open About, Experience,
+                Skills, Projects, or Contact.
+              </span>
+              <span className="hidden sm:inline">
+                Tap any orb around the center to explore About, Experience, Skills, Projects, or Contact
+                and learn more.
+              </span>
             </p>
             <div className="mt-5 flex flex-wrap items-center justify-center gap-3 sm:mt-6">
               <button
