@@ -2,8 +2,8 @@ import React, { useCallback, useEffect, useId, useMemo, useRef, useState } from 
 import photo from "./assets/photo.png";
 
 /**
- * 3×2 grid: top row About · (empty center) · Skills so the headline isn’t under a bubble;
- * bottom row Experience · Projects · Contact.
+ * Bubble grid areas: sm+ uses About & Skills top corners and Experience / Projects / Contact on the bottom.
+ * Below sm, the top grid row is empty (hero stays clear); all five orbs sit in two bottom rows.
  */
 const BUBBLE_SECTIONS = [
   { id: "about", label: "About", orbit: "bubble-orbit-1", area: "about" },
@@ -370,7 +370,7 @@ function ProjectCard({
       className="w-full [perspective:1200px]"
       data-why-expanded={whyOpen ? "" : undefined}
     >
-      <div className="relative w-full max-md:h-[min(52dvh,20rem)] md:min-h-[min(64vh,24rem)] lg:min-h-[min(68vh,26rem)] xl:min-h-[min(72vh,28rem)]">
+      <div className="relative w-full max-md:h-[min(72dvh,32rem)] md:min-h-[min(64vh,24rem)] lg:min-h-[min(68vh,26rem)] xl:min-h-[min(72vh,28rem)]">
         <article
           className={[
             "relative h-full min-h-[inherit] w-full transition-transform duration-700 ease-out motion-reduce:duration-0 [transform-style:preserve-3d]",
@@ -380,7 +380,7 @@ function ProjectCard({
         >
           {/* Front — scroll inside on small screens so actions stay reachable */}
           <div
-            className="group/front absolute inset-0 flex flex-col overflow-y-auto overflow-x-hidden rounded-3xl border border-white/[0.14] bg-gradient-to-br from-zinc-900/95 via-zinc-900/90 to-fuchsia-950/35 p-4 shadow-[0_24px_60px_-28px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.04)_inset] [backface-visibility:hidden] [transform:rotateY(0deg)] transition-[border-color,box-shadow] duration-300 [scrollbar-gutter:stable] hover:border-fuchsia-400/35 hover:shadow-[0_28px_70px_-24px_rgba(168,85,247,0.22),0_0_0_1px_rgba(217,70,239,0.12)_inset] sm:p-6 md:p-7"
+            className="project-card-scroll group/front absolute inset-0 flex flex-col overflow-y-auto overflow-x-hidden overscroll-y-contain rounded-3xl border border-white/[0.14] bg-gradient-to-br from-zinc-900/95 via-zinc-900/90 to-fuchsia-950/35 p-4 pb-5 shadow-[0_24px_60px_-28px_rgba(0,0,0,0.85),0_0_0_1px_rgba(255,255,255,0.04)_inset] [backface-visibility:hidden] [transform:rotateY(0deg)] transition-[border-color,box-shadow] duration-300 [scrollbar-gutter:stable] hover:border-fuchsia-400/35 hover:shadow-[0_28px_70px_-24px_rgba(168,85,247,0.22),0_0_0_1px_rgba(217,70,239,0.12)_inset] [touch-action:pan-y] sm:p-6 md:p-7"
             aria-hidden={whyOpen}
           >
             <div
@@ -399,7 +399,7 @@ function ProjectCard({
               <h3 className="font-display mt-3 text-lg font-extrabold leading-[1.15] tracking-tight text-white sm:mt-4 sm:text-xl md:mt-5 md:text-2xl">
                 {title}
               </h3>
-              <p className="mt-2 flex-1 text-sm leading-relaxed text-zinc-300 sm:mt-3 sm:text-base md:text-lg md:leading-relaxed">
+              <p className="mt-2 text-sm leading-relaxed text-zinc-300 sm:mt-3 sm:text-base md:text-lg md:leading-relaxed">
                 {description}
               </p>
               <ul className="mt-3 list-none space-y-2 text-sm leading-snug text-zinc-100 sm:mt-4 sm:space-y-2.5 sm:text-base md:space-y-3 md:text-[17px] md:leading-snug">
@@ -461,7 +461,7 @@ function ProjectCard({
                 <span aria-hidden>×</span>
               </button>
             </div>
-            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-4 sm:px-6">
+            <div className="project-card-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-4 [touch-action:pan-y] sm:px-6">
               {why}
             </div>
             <div className="shrink-0 border-t border-white/10 bg-zinc-950/60 px-5 py-3 sm:px-6">
@@ -484,6 +484,7 @@ function ProjectsDeck({ projects, initialDeckKey }) {
   const n = projects.length;
   const [index, setIndex] = useState(() => deckIndexFromKey(projects, initialDeckKey));
   const touchStartX = useRef(null);
+  const touchStartY = useRef(null);
 
   const go = useCallback(
     (delta) => {
@@ -505,13 +506,18 @@ function ProjectsDeck({ projects, initialDeckKey }) {
 
   const onTouchStart = (e) => {
     touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
   };
 
   const onTouchEnd = (e) => {
-    if (touchStartX.current == null) return;
+    if (touchStartX.current == null || touchStartY.current == null) return;
     const dx = e.changedTouches[0].clientX - touchStartX.current;
+    const dy = e.changedTouches[0].clientY - touchStartY.current;
     touchStartX.current = null;
+    touchStartY.current = null;
     if (Math.abs(dx) < 48) return;
+    /* Prefer vertical scrolling inside the card over horizontal deck swipe */
+    if (Math.abs(dx) <= Math.abs(dy)) return;
     if (dx > 0) go(-1);
     else go(1);
   };
@@ -529,7 +535,7 @@ function ProjectsDeck({ projects, initialDeckKey }) {
         </button>
 
         <div
-          className="min-w-0 flex-1 overflow-hidden rounded-3xl"
+          className="min-h-0 min-w-0 flex-1 overflow-hidden rounded-3xl"
           onTouchStart={onTouchStart}
           onTouchEnd={onTouchEnd}
         >
@@ -899,8 +905,8 @@ export default function Portfolio() {
             </p>
             <p className="mt-5 text-[11px] leading-snug text-zinc-500 sm:mt-6 sm:text-xs">
               <span className="sm:hidden">
-                Tap the orbs along the top or bottom, or use the menu above, to open About, Experience,
-                Skills, Projects, or Contact.
+                Tap the orbs below or use the menu above to open About, Experience, Skills, Projects, or
+                Contact.
               </span>
               <span className="hidden sm:inline">
                 Tap any orb around the center to explore About, Experience, Skills, Projects, or Contact

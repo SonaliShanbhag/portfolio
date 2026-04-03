@@ -14,6 +14,11 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Project deck: momentum scroll on iOS; pairs with [touch-action:pan-y] on the card face */
+.project-card-scroll {
+  -webkit-overflow-scrolling: touch;
+}
+
 /* Subtle grid + vignette */
 .bg-site {
   background-color: #070708;
@@ -152,14 +157,14 @@ body {
   }
 }
 
-/* Orbits around hero: phone puts Experience/Projects/Contact on top and About/Skills on the bottom
-   so top corners don’t cover the headline; desktop keeps About & Skills upper corners. */
+/* Orbits around hero: phone keeps the upper area empty so orbs (z-35) never sit on the headline;
+   all five orbs live in two compact rows at the bottom. Desktop keeps About & Skills upper corners. */
 .bubble-field-nav {
-  grid-template-rows: auto minmax(2.75rem, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr) auto auto;
   grid-template-areas:
-    "experience projects contact"
     ". . ."
-    "about . skills";
+    "about . skills"
+    "experience projects contact";
 }
 
 @media (min-width: 640px) {
