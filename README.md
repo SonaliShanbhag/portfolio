@@ -60,9 +60,11 @@ npm run build:all
 npm run preview
 ```
 
-Then open `/simulator/`, `/queue/`, etc. **Do not** use “Live Server” on `dist/simulator/` alone: scripts load from `/simulator/assets/…`, so the server root must be **`dist/`** (same as GitHub Pages). Alternatively: `npx serve dist`.
+Then open `/simulator/`, `/queue/`, etc. **`npx serve dist`** (repo root) is the closest match to GitHub Pages.
 
-Asset URLs are driven by **`VITE_PAGES_BASE`** (see `scripts/vite-pages-base.js`). For a **root** deploy (e.g. `https://yoursite.com/` or `https://<user>.github.io/`), leave it unset or set it to `/` — demos use `/simulator/`, `/queue/`, etc. For **`https://<user>.github.io/<repo>/`**, set **`VITE_PAGES_BASE=/<repo>/`** (trailing slash) before `npm run build:all` so assets resolve under `/repo/simulator/`, etc.
+You can also point Live Server (or any static host) at **`dist/simulator`** and open the URL it prints: production builds use **relative** `./assets/…` so that layout works. (Older absolute `/simulator/assets/…` URLs failed in that setup and looked like a blank page.)
+
+The **main site** `base` follows **`VITE_PAGES_BASE`** in CI (see `scripts/vite-pages-base.js`). **Demo bundles** use **relative** `./assets/…` in production so they load under `/simulator/`, `/queue/`, etc. on GitHub Pages and when previewing a single folder locally.
 
 ## GitHub Pages
 
@@ -78,7 +80,7 @@ Optional: add **`REWARD_OPTIMIZER_DEMO`** if you need a different URL than the d
 
 **Personal librarian demo:** GitHub Pages only hosts static files. The app talks to **Ollama on your machine** (`127.0.0.1:11434` by default). Visitors who only open the public URL will not have your Ollama running; for a live chat demo, run Ollama locally and open the site (or record a short video for reviewers). Do not expose Ollama to the public internet without authentication.
 
-**Blank demo but title loads:** In DevTools → **Network**, confirm the main `.js` under `/simulator/assets/` (etc.) returns **200**. If yes, check **Console** for errors. On **Cloudflare** in front of GitHub Pages, turn off **Rocket Loader** (it can break `type="module"` scripts).
+**Blank demo but title loads:** In DevTools → **Network**, confirm the main `.js` for that demo returns **200** (path is usually `…/simulator/assets/…` on the live site). If it’s **404**, the server root doesn’t match how you’re opening the app (see preview notes above). If it’s **200**, check **Console** for errors; on **Cloudflare**, disable **Rocket Loader** (it can break `type="module"` scripts).
 
 ## Repository layout
 

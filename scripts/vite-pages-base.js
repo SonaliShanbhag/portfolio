@@ -6,11 +6,15 @@
  */
 
 /**
- * Demo apps: absolute `base` from `VITE_PAGES_BASE` so asset URLs never depend on the browser
- * resolving `./` (query strings, proxies, or CDNs can break that). CI sets `VITE_PAGES_BASE` (default `/`).
+ * Demos:
+ * - **build** → `base: './'` so `./assets/…` resolves from this app’s folder. Works with `npx serve dist`
+ *   (URL `/simulator/`) *and* when a tool uses **`dist/simulator` as the web root** (Live Server, etc.).
+ *   Absolute `/simulator/assets/…` breaks that second case (browser asks the wrong host path → blank screen).
+ * - **serve** → `/${segment}/` so `npm run dev:all` + root proxy still work.
  */
-/** @param {string} segment e.g. "simulator" */
-export function viteDemoBase(segment) {
+/** @param {string} segment @param {"serve" | "build"} command */
+export function viteDemoBase(segment, command) {
+  if (command === "build") return "./";
   const raw = process.env.VITE_PAGES_BASE;
   if (!raw || raw === "/") return `/${segment}/`;
   const trimmed = raw.replace(/\/$/, "");
