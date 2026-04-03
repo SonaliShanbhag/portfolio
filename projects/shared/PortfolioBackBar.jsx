@@ -19,8 +19,12 @@ export default function PortfolioBackBar() {
   const href = `../?open_projects=1&deck=${encodeURIComponent(deck)}`;
 
   return (
-    <a href={href} className="portfolio-back-link">
-      ← Back to portfolio
-    </a>
+    <>
+      {/* In-flow gap so titles (e.g. Card Fit eyebrow) don’t sit under the fixed control */}
+      <div className="portfolio-back-spacer" aria-hidden />
+      <a href={href} className="portfolio-back-link">
+        ← Back to portfolio
+      </a>
+    </>
   );
 }
