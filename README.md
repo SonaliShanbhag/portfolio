@@ -77,6 +77,8 @@ Optional: add **`REWARD_OPTIMIZER_DEMO`** if you need a different URL than the d
 
 **Personal librarian demo:** GitHub Pages only hosts static files. The app talks to **Ollama on your machine** (`127.0.0.1:11434` by default). Visitors who only open the public URL will not have your Ollama running; for a live chat demo, run Ollama locally and open the site (or record a short video for reviewers). Do not expose Ollama to the public internet without authentication.
 
+**Blank demo but title loads:** In DevTools → **Network**, confirm the main `.js` under `/simulator/assets/` (etc.) returns **200**. If yes, check **Console** for errors. On **Cloudflare** in front of GitHub Pages, turn off **Rocket Loader** (it can break `type="module"` scripts).
+
 ## Repository layout
 
 | Path | Role |

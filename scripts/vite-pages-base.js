@@ -6,12 +6,11 @@
  */
 
 /**
- * Demos: production `base` is `./` so JS/CSS load next to each demo’s index.html (any host).
- * Dev keeps `/${segment}/` for `npm run dev:all` + root Vite proxy.
+ * Demo apps: absolute `base` from `VITE_PAGES_BASE` so asset URLs never depend on the browser
+ * resolving `./` (query strings, proxies, or CDNs can break that). CI sets `VITE_PAGES_BASE` (default `/`).
  */
-/** @param {string} segment @param {"serve" | "build"} command */
-export function viteDemoBase(segment, command) {
-  if (command === "build") return "./";
+/** @param {string} segment e.g. "simulator" */
+export function viteDemoBase(segment) {
   const raw = process.env.VITE_PAGES_BASE;
   if (!raw || raw === "/") return `/${segment}/`;
   const trimmed = raw.replace(/\/$/, "");
