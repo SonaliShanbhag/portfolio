@@ -3,7 +3,7 @@ import photo from "./assets/photo.png";
 
 /**
  * Bubble grid areas: sm+ uses About & Skills top corners and Experience / Projects / Contact on the bottom.
- * Below sm, the top grid row is empty (hero stays clear); all five orbs sit in two bottom rows.
+ * Below sm, top row is empty; row 2 centers About & Skills as a pair; row 3 is three orbs (6-col grid).
  */
 const BUBBLE_SECTIONS = [
   { id: "about", label: "About", orbit: "bubble-orbit-1", area: "about" },
@@ -147,7 +147,7 @@ function BubbleField({ onSelect, openPanelId }) {
   return (
     <nav
       aria-label="Explore sections"
-      className="bubble-field-nav pointer-events-none absolute inset-0 z-[35] grid h-full w-full grid-cols-3 overflow-visible px-2 pb-2 pt-1 gap-x-1 gap-y-3 min-[400px]:gap-x-2 min-[400px]:gap-y-3 sm:gap-x-4 sm:gap-y-4 sm:px-4 sm:py-3"
+      className="bubble-field-nav pointer-events-none absolute inset-0 z-[35] grid h-full w-full grid-cols-6 sm:grid-cols-3 overflow-visible px-2 pb-2 pt-1 gap-x-1 gap-y-3 min-[400px]:gap-x-2 min-[400px]:gap-y-3 sm:gap-x-4 sm:gap-y-4 sm:px-4 sm:py-3"
     >
       {BUBBLE_SECTIONS.map((s) => (
         <div
